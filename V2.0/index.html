@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静水流深 - 项目管理应用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <style>
+        body {
+            background-image: url('https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/3612dd9e5eba4079aef2482ba3963936~tplv-a9rns2rl98-image.image?rcl=202512231857189AC3A4803BA12D453085&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1769079515&x-signature=BaAlGcbxuj4bL4%2BSuDbKUY0MlRo%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 dark:text-white transition-colors duration-500">
+    <div id="app" class="min-h-screen flex flex-col">
+        <header class="glass-card p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="moon" class="w-8 h-8 text-yellow-500"></i>
+                <h1 class="text-2xl font-bold">静水流深</h1>
+            </div>
+            <nav class="flex space-x-4">
+                <a href="index.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">项目管理</a>
+                <a href="focus.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">专注模式</a>
+                <a href="stats.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">数据统计</a>
+                <a href="settings.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">设置</a>
+            </nav>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-white/10">
+                <i data-lucide="sun" class="w-6 h-6"></i>
+            </button>
+        </header>
+
+        <main class="flex-grow p-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Sidebar -->
+                <aside class="md:col-span-1 space-y-4">
+                    <div class="glass-card p-4 rounded-lg">
+                        <h2 class="text-lg font-semibold mb-4">分类筛选</h2>
+                        <div class="space-y-2" id="category-filters">
+                            <!-- Categories will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg">
+                        <h2 class="text-lg font-semibold mb-4">优先级</h2>
+                        <div class="space-y-2" id="priority-filters">
+                            <!-- Priorities will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg">
+                        <h2 class="text-lg font-semibold mb-4">状态</h2>
+                        <div class="space-y-2" id="status-filters">
+                            <!-- Statuses will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="md:col-span-3 space-y-4">
+                    <div class="glass-card p-4 rounded-lg flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="search" class="w-6 h-6"></i>
+                            <input type="text" id="search-input" placeholder="搜索项目..." class="bg-transparent border-none outline-none">
+                        </div>
+                        <button id="add-project-btn" class="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition">
+                            <i data-lucide="plus" class="w-4 h-4 inline-block mr-2"></i>添加项目
+                        </button>
+                    </div>
+
+                    <!-- Project Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="glass-card p-4 rounded-lg text-center">
+                            <p class="text-sm opacity-70">今日专注</p>
+                            <p class="text-2xl font-bold"><span id="today-focus-hours">0</span>小时<span id="today-focus-minutes">0</span>分</p>
+                            <i data-lucide="clock" class="w-12 h-12 mx-auto text-yellow-500 opacity-50"></i>
+                        </div>
+                        <div class="glass-card p-4 rounded-lg text-center">
+                            <p class="text-sm opacity-70">进行中的项目</p>
+                            <p class="text-2xl font-bold"><span id="in-progress-count">0</span></p>
+                            <i data-lucide="play-circle" class="w-12 h-12 mx-auto text-green-500 opacity-50"></i>
+                        </div>
+                        <div class="glass-card p-4 rounded-lg text-center">
+                            <p class="text-sm opacity-70">即将到期</p>
+                            <p class="text-2xl font-bold"><span id="due-soon-count">0</span></p>
+                            <i data-lucide="alert-triangle" class="w-12 h-12 mx-auto text-red-500 opacity-50"></i>
+                        </div>
+                    </div>
+
+                    <!-- Projects List -->
+                    <div class="glass-card p-4 rounded-lg">
+                        <h2 class="text-xl font-semibold mb-4">我的项目</h2>
+                        <div id="projects-container" class="space-y-4">
+                            <!-- Projects will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div id="add-project-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden">
+        <div class="glass-card p-8 rounded-lg w-full max-w-lg">
+            <h2 class="text-2xl font-bold mb-6">添加新项目</h2>
+            <form id="add-project-form" class="space-y-4">
+                <input type="text" id="project-title" placeholder="项目标题" class="w-full p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <textarea id="project-description" placeholder="项目描述" rows="3" class="w-full p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"></textarea>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="date" id="project-due-date" class="p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                    <select id="project-category" class="p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                        <option value="">选择分类</option>
+                        <option value="工作">工作</option>
+                        <option value="学习">学习</option>
+                        <option value="生活">生活</option>
+                        <option value="创意">创意</option>
+                    </select>
+                </div>
+                <select id="project-priority" class="p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                    <option value="低">低优先级</option>
+                    <option value="中">中优先级</option>
+                    <option value="高">高优先级</option>
+                </select>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancel-add-project" class="px-4 py-2 rounded-lg hover:bg-white/10">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600">添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // Theme toggle
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const icon = themeToggle.querySelector('i');
+            if (html.classList.contains('dark')) {
+                icon.setAttribute('data-lucide', 'moon');
+            } else {
+                icon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Load theme from localStorage
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            themeToggle.querySelector('i').setAttribute('data-lucide', 'moon');
+            lucide.createIcons();
+        }
+
+        // Data storage
+        let projects = JSON.parse(localStorage.getItem('projects')) || [];
+        let focusSessions = JSON.parse(localStorage.getItem('focusSessions')) || [];
+
+        const addProjectModal = document.getElementById('add-project-modal');
+        const addProjectBtn = document.getElementById('add-project-btn');
+        const cancelAddProjectBtn = document.getElementById('cancel-add-project');
+        const addProjectForm = document.getElementById('add-project-form');
+        const projectsContainer = document.getElementById('projects-container');
+        const searchInput = document.getElementById('search-input');
+
+        // Filters
+        const categoryFilters = document.getElementById('category-filters');
+        const priorityFilters = document.getElementById('priority-filters');
+        const statusFilters = document.getElementById('status-filters');
+
+        let filters = {
+            search: '',
+            categories: [],
+            priorities: [],
+            statuses: []
+        };
+
+        // Modal toggle
+        addProjectBtn.addEventListener('click', () => addProjectModal.classList.remove('hidden'));
+        cancelAddProjectBtn.addEventListener('click', () => addProjectModal.classList.add('hidden'));
+
+        // Add project
+        addProjectForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('project-title').value;
+            const description = document.getElementById('project-description').value;
+            const dueDate = document.getElementById('project-due-date').value;
+            const category = document.getElementById('project-category').value;
+            const priority = document.getElementById('project-priority').value;
+
+            if (title) {
+                const newProject = {
+                    id: Date.now().toString(),
+                    title,
+                    description,
+                    dueDate,
+                    category,
+                    priority,
+                    status: '待开始',
+                    tags: [],
+                    focusTime: 0,
+                    createdAt: new Date().toISOString()
+                };
+                projects.push(newProject);
+                saveData();
+                renderProjects();
+                renderFilters();
+                addProjectModal.classList.add('hidden');
+                addProjectForm.reset();
+            }
+        });
+
+        // Render projects
+        function renderProjects() {
+            projectsContainer.innerHTML = '';
+            const filteredProjects = filterProjects();
+
+            if (filteredProjects.length === 0) {
+                projectsContainer.innerHTML = '<p class="text-center opacity-50">暂无项目</p>';
+                return;
+            }
+
+            filteredProjects.forEach(project => {
+                const projectCard = document.createElement('div');
+                projectCard.className = 'glass-card p-4 rounded-lg';
+                projectCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold">${project.title}</h3>
+                            <p class="text-sm opacity-70">${project.description}</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="p-2 rounded-full hover:bg-white/10 edit-project" data-id="${project.id}">
+                                <i data-lucide="edit" class="w-4 h-4"></i>
+                            </button>
+                            <button class="p-2 rounded-full hover:bg-white/10 delete-project" data-id="${project.id}">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                        <div class="flex items-center space-x-2 text-sm">
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">${project.category || '未分类'}</span>
+                            <span class="px-2 py-1 bg-${getPriorityColor(project.priority)}-100 text-${getPriorityColor(project.priority)}-800 dark:bg-${getPriorityColor(project.priority)}-900 dark:text-${getPriorityColor(project.priority)}-200 rounded-full">优先级${project.priority}</span>
+                            <span class="px-2 py-1 bg-${getStatusColor(project.status)}-100 text-${getStatusColor(project.status)}-800 dark:bg-${getStatusColor(project.status)}-900 dark:text-${getStatusColor(project.status)}-200 rounded-full">${project.status}</span>
+                        </div>
+                        <div class="text-sm opacity-70">
+                            ${project.dueDate ? `截止日期: ${formatDate(project.dueDate)}` : ''}
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                        <div>
+                            <p class="text-sm opacity-70">专注时间</p>
+                            <p class="font-semibold">${formatTime(project.focusTime)}</p>
+                        </div>
+                        <button class="start-focus-btn px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition" data-id="${project.id}">
+                            开始专注
+                        </button>
+                    </div>
+                `;
+                projectsContainer.appendChild(projectCard);
+            });
+            lucide.createIcons();
+            
+            // Add event listeners for new buttons
+            document.querySelectorAll('.delete-project').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    deleteProject(id);
+                });
+            });
+            
+            document.querySelectorAll('.start-focus-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    window.location.href = `focus.html?projectId=${id}`;
+                });
+            });
+        }
+
+        function getPriorityColor(priority) {
+            switch (priority) {
+                case '高': return 'red';
+                case '中': return 'yellow';
+                case '低': return 'green';
+                default: return 'gray';
+            }
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case '进行中': return 'green';
+                case '待开始': return 'blue';
+                case '已完成': return 'gray';
+                default: return 'gray';
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        function formatTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}小时${mins}分`;
+        }
+
+        function deleteProject(id) {
+            projects = projects.filter(p => p.id !== id);
+            saveData();
+            renderProjects();
+            renderFilters();
+        }
+
+        function filterProjects() {
+            return projects.filter(project => {
+                const matchesSearch = project.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+                                      project.description.toLowerCase().includes(filters.search.toLowerCase());
+                const matchesCategory = filters.categories.length === 0 || filters.categories.includes(project.category);
+                const matchesPriority = filters.priorities.length === 0 || filters.priorities.includes(project.priority);
+                const matchesStatus = filters.statuses.length === 0 || filters.statuses.includes(project.status);
+
+                return matchesSearch && matchesCategory && matchesPriority && matchesStatus;
+            });
+        }
+
+        // Render filters
+        function renderFilters() {
+            // Categories
+            const categories = [...new Set(projects.map(p => p.category).filter(Boolean))];
+            categoryFilters.innerHTML = categories.map(cat => `
+                <label class="flex items-center space-x-2">
+                    <input type="checkbox" class="category-filter" value="${cat}">
+                    <span>${cat}</span>
+                </label>
+            `).join('');
+
+            // Priorities
+            const priorities = ['高', '中', '低'];
+            priorityFilters.innerHTML = priorities.map(p => `
+                <label class="flex items-center space-x-2">
+                    <input type="checkbox" class="priority-filter" value="${p}">
+                    <span>优先级${p}</span>
+                </label>
+            `).join('');
+
+            // Statuses
+            const statuses = ['待开始', '进行中', '已完成'];
+            statusFilters.innerHTML = statuses.map(s => `
+                <label class="flex items-center space-x-2">
+                    <input type="checkbox" class="status-filter" value="${s}">
+                    <span>${s}</span>
+                </label>
+            `).join('');
+
+            // Add event listeners
+            document.querySelectorAll('.category-filter').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    filters.categories = Array.from(document.querySelectorAll('.category-filter:checked')).map(c => c.value);
+                    renderProjects();
+                });
+            });
+            document.querySelectorAll('.priority-filter').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    filters.priorities = Array.from(document.querySelectorAll('.priority-filter:checked')).map(c => c.value);
+                    renderProjects();
+                });
+            });
+            document.querySelectorAll('.status-filter').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    filters.statuses = Array.from(document.querySelectorAll('.status-filter:checked')).map(c => c.value);
+                    renderProjects();
+                });
+            });
+        }
+
+        // Search
+        searchInput.addEventListener('input', (e) => {
+            filters.search = e.target.value;
+            renderProjects();
+        });
+        
+        // Update stats
+        function updateStats() {
+            const today = new Date().toDateString();
+            const todaySessions = focusSessions.filter(s => new Date(s.date).toDateString() === today);
+            const todayMinutes = todaySessions.reduce((acc, session) => acc + session.duration, 0);
+            document.getElementById('today-focus-hours').textContent = Math.floor(todayMinutes / 60);
+            document.getElementById('today-focus-minutes').textContent = todayMinutes % 60;
+
+            const inProgressCount = projects.filter(p => p.status === '进行中').length;
+            document.getElementById('in-progress-count').textContent = inProgressCount;
+
+            const todayDate = new Date();
+            const threeDaysLater = new Date(todayDate);
+            threeDaysLater.setDate(todayDate.getDate() + 3);
+
+            const dueSoonCount = projects.filter(p => {
+                if (!p.dueDate) return false;
+                const dueDate = new Date(p.dueDate);
+                return dueDate >= todayDate && dueDate <= threeDaysLater && p.status !== '已完成';
+            }).length;
+            document.getElementById('due-soon-count').textContent = dueSoonCount;
+        }
+
+        function saveData() {
+            localStorage.setItem('projects', JSON.stringify(projects));
+            localStorage.setItem('focusSessions', JSON.stringify(focusSessions));
+            updateStats();
+        }
+
+        // Initial render
+        renderProjects();
+        renderFilters();
+        updateStats();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静水流深 - 设置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <style>
+        body {
+            background-image: url('https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/3612dd9e5eba4079aef2482ba3963936~tplv-a9rns2rl98-image.image?rcl=202512231857189AC3A4803BA12D453085&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1769079515&x-signature=BaAlGcbxuj4bL4%2BSuDbKUY0MlRo%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #68D391;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #68D391;
+        }
+        .dot {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 dark:text-white transition-colors duration-500">
+    <div id="app" class="min-h-screen flex flex-col">
+        <header class="glass-card p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="moon" class="w-8 h-8 text-yellow-500"></i>
+                <h1 class="text-2xl font-bold">静水流深</h1>
+            </div>
+            <nav class="flex space-x-4">
+                <a href="index.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">项目管理</a>
+                <a href="focus.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">专注模式</a>
+                <a href="stats.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">数据统计</a>
+                <a href="settings.html" class="px-4 py-2 rounded-lg bg-white/10 transition">设置</a>
+            </nav>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-white/10">
+                <i data-lucide="sun" class="w-6 h-6"></i>
+            </button>
+        </header>
+
+        <main class="flex-grow p-8">
+            <div class="glass-card p-8 rounded-lg max-w-2xl mx-auto">
+                <div class="text-center mb-12">
+                    <i data-lucide="settings" class="w-16 h-16 mx-auto text-yellow-500"></i>
+                    <h2 class="text-3xl font-bold mt-4">设置</h2>
+                    <p class="opacity-70">个性化你的专注体验</p>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="glass-card p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">外观设置</h3>
+                        <div class="space-y-4">
+                            <label class="flex items-center justify-between">
+                                <span>浅色主题</span>
+                                <div class="relative">
+                                    <input type="radio" name="theme" id="light-theme" class="sr-only" value="light">
+                                    <div class="block bg-white/20 w-14 h-8 rounded-full"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                                </div>
+                            </label>
+                            <label class="flex items-center justify-between">
+                                <span>深色主题</span>
+                                <div class="relative">
+                                    <input type="radio" name="theme" id="dark-theme" class="sr-only" value="dark">
+                                    <div class="block bg-white/20 w-14 h-8 rounded-full"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                                </div>
+                            </label>
+                             <label class="flex items-center justify-between">
+                                <span>跟随系统</span>
+                                <div class="relative">
+                                    <input type="radio" name="theme" id="system-theme" class="sr-only" value="system">
+                                    <div class="block bg-white/20 w-14 h-8 rounded-full"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">通知设置</h3>
+                        <div class="space-y-4">
+                            <label class="flex items-center justify-between">
+                                <span>桌面通知</span>
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="desktop-notifications" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer right-0 top-0" checked/>
+                                    <label for="desktop-notifications" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                            </label>
+                            <label class="flex items-center justify-between">
+                                <span>声音提醒</span>
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="sound-alerts" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer right-0 top-0" checked/>
+                                    <label for="sound-alerts" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">专注设置</h3>
+                        <div class="space-y-4">
+                            <label class="flex items-center justify-between">
+                                <span>默认专注时长</span>
+                                <select id="default-focus-length" class="p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                                    <option value="5">5分钟</option>
+                                    <option value="10">10分钟</option>
+                                    <option value="15">15分钟</option>
+                                    <option value="20">20分钟</option>
+                                    <option value="25" selected>25分钟</option>
+                                    <option value="30">30分钟</option>
+                                    <option value="45">45分钟</option>
+                                    <option value="60">60分钟</option>
+                                </select>
+                            </label>
+                            <label class="flex items-center justify-between">
+                                <span>每日目标</span>
+                                <select id="daily-goal" class="p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                                    <option value="30">30分钟</option>
+                                    <option value="60">1小时</option>
+                                    <option value="120" selected>2小时</option>
+                                    <option value="180">3小时</option>
+                                    <option value="240">4小时</option>
+                                    <option value="300">5小时</option>
+                                    <option value="360">6小时</option>
+                                </select>
+                            </label>
+                             <label class="flex items-center justify-between">
+                                <span>自动开始休息</span>
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                    <input type="checkbox" id="auto-break" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer right-0 top-0" checked/>
+                                    <label for="auto-break" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">数据管理</h3>
+                        <div class="grid grid-cols-3 gap-4 text-center mb-6">
+                            <div>
+                                <p class="text-2xl font-bold"><span id="project-count">0</span></p>
+                                <p class="text-sm opacity-70">项目数量</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold"><span id="session-count">0</span></p>
+                                <p class="text-sm opacity-70">专注次数</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold"><span id="total-focus-time">0</span>h</p>
+                                <p class="text-sm opacity-70">总时长</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-center space-x-4">
+                            <button id="export-data" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                                <i data-lucide="download" class="w-4 h-4 inline-block mr-2"></i>导出数据
+                            </button>
+                            <button id="import-data" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                                <i data-lucide="upload" class="w-4 h-4 inline-block mr-2"></i>导入数据
+                            </button>
+                            <input type="file" id="import-input" accept=".json" class="hidden">
+                        </div>
+                        <div class="mt-6 text-center">
+                            <button id="reset-data" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                                <i data-lucide="trash-2" class="w-4 h-4 inline-block mr-2"></i>归墟 (清空所有数据)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">关于静水流深</h3>
+                        <p class="text-sm opacity-70 mb-4">"静水流深"是一款充满诗意的项目管理应用，旨在帮助用户以更加优雅和专注的方式管理时间和项目。</p>
+                        <p class="text-sm opacity-70">我们相信，每一次专注都是生命中的珍贵时光，每一个项目都是成长路上的重要里程碑。通过将东方美学的宁静与现代工具的效率相结合，我们将帮助你创造一个更加充实和富有成效的数字生活。</p>
+                        <div class="flex justify-center space-x-4 mt-6">
+                            <a href="#" class="text-sm opacity-70 hover:opacity-100">隐私政策</a>
+                            <a href="#" class="text-sm opacity-70 hover:opacity-100">使用条款</a>
+                            <a href="#" class="text-sm opacity-70 hover:opacity-100">联系我们</a>
+                            <a href="#" class="text-sm opacity-70 hover:opacity-100">意见反馈</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Reset Data Modal -->
+    <div id="reset-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden">
+        <div class="glass-card p-8 rounded-lg w-full max-w-lg">
+            <h2 class="text-2xl font-bold mb-6">归墟</h2>
+            <p class="mb-4">你确定要清空所有数据吗？此操作不可撤销。</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-reset" class="px-4 py-2 rounded-lg hover:bg-white/10">取消</button>
+                <button id="confirm-reset" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // Theme toggle
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const icon = themeToggle.querySelector('i');
+            if (html.classList.contains('dark')) {
+                icon.setAttribute('data-lucide', 'moon');
+            } else {
+                icon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Load theme from localStorage
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            themeToggle.querySelector('i').setAttribute('data-lucide', 'moon');
+            lucide.createIcons();
+        }
+
+        // Settings
+        const lightThemeRadio = document.getElementById('light-theme');
+        const darkThemeRadio = document.getElementById('dark-theme');
+        const systemThemeRadio = document.getElementById('system-theme');
+        const defaultFocusLength = document.getElementById('default-focus-length');
+        const dailyGoal = document.getElementById('daily-goal');
+        const desktopNotifications = document.getElementById('desktop-notifications');
+        const soundAlerts = document.getElementById('sound-alerts');
+        const autoBreak = document.getElementById('auto-break');
+        const exportDataBtn = document.getElementById('export-data');
+        const importDataBtn = document.getElementById('import-data');
+        const importInput = document.getElementById('import-input');
+        const resetDataBtn = document.getElementById('reset-data');
+        const resetModal = document.getElementById('reset-modal');
+        const cancelResetBtn = document.getElementById('cancel-reset');
+        const confirmResetBtn = document.getElementById('confirm-reset');
+
+        let projects = JSON.parse(localStorage.getItem('projects')) || [];
+        let focusSessions = JSON.parse(localStorage.getItem('focusSessions')) || [];
+        let settings = JSON.parse(localStorage.getItem('settings')) || {
+            theme: 'system',
+            defaultFocusLength: 25,
+            dailyGoal: 120,
+            desktopNotifications: true,
+            soundAlerts: true,
+            autoBreak: true
+        };
+
+        // Load settings
+        function loadSettings() {
+            // Theme
+            document.querySelector(`input[name="theme"][value="${settings.theme}"]`).checked = true;
+            updateThemeDots();
+
+            // Focus settings
+            defaultFocusLength.value = settings.defaultFocusLength;
+            dailyGoal.value = settings.dailyGoal;
+
+            // Notifications
+            desktopNotifications.checked = settings.desktopNotifications;
+            soundAlerts.checked = settings.soundAlerts;
+            autoBreak.checked = settings.autoBreak;
+
+            // Stats
+            document.getElementById('project-count').textContent = projects.length;
+            document.getElementById('session-count').textContent = focusSessions.length;
+            const totalMinutes = focusSessions.reduce((acc, session) => acc + session.duration, 0);
+            document.getElementById('total-focus-time').textContent = Math.floor(totalMinutes / 60);
+        }
+
+        function saveSettings() {
+            localStorage.setItem('settings', JSON.stringify(settings));
+        }
+
+        // Theme radio buttons
+        const themeLabels = document.querySelectorAll('input[name="theme"]');
+        themeLabels.forEach(radio => {
+            radio.addEventListener('change', () => {
+                settings.theme = radio.value;
+                applyTheme();
+                updateThemeDots();
+                saveSettings();
+            });
+        });
+
+        function applyTheme() {
+            switch (settings.theme) {
+                case 'light':
+                    html.classList.remove('dark');
+                    break;
+                case 'dark':
+                    html.classList.add('dark');
+                    break;
+                case 'system':
+                    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        html.classList.add('dark');
+                    } else {
+                        html.classList.remove('dark');
+                    }
+                    break;
+            }
+            const icon = themeToggle.querySelector('i');
+            if (html.classList.contains('dark')) {
+                icon.setAttribute('data-lucide', 'moon');
+            } else {
+                icon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+        }
+
+        function updateThemeDots() {
+            const radios = document.querySelectorAll('input[name="theme"]');
+            radios.forEach(radio => {
+                const dot = radio.nextElementSibling.nextElementSibling;
+                if (radio.checked) {
+                    dot.classList.add('translate-x-6');
+                } else {
+                    dot.classList.remove('translate-x-6');
+                }
+            });
+        }
+
+        // Other settings
+        defaultFocusLength.addEventListener('change', () => {
+            settings.defaultFocusLength = parseInt(defaultFocusLength.value);
+            saveSettings();
+        });
+
+        dailyGoal.addEventListener('change', () => {
+            settings.dailyGoal = parseInt(dailyGoal.value);
+            saveSettings();
+        });
+
+        desktopNotifications.addEventListener('change', () => {
+            settings.desktopNotifications = desktopNotifications.checked;
+            saveSettings();
+        });
+
+        soundAlerts.addEventListener('change', () => {
+            settings.soundAlerts = soundAlerts.checked;
+            saveSettings();
+        });
+
+        autoBreak.addEventListener('change', () => {
+            settings.autoBreak = autoBreak.checked;
+            saveSettings();
+        });
+
+        // Export data
+        exportDataBtn.addEventListener('click', () => {
+            const data = {
+                projects: projects || [],
+                focusSessions: focusSessions || [],
+                settings: settings || {},
+                exportDate: new Date().toISOString()
+            };
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = `tranquil-tasks-backup-${new Date().toISOString().split('T')[0]}.json`;
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            document.body.appendChild(linkElement);
+            linkElement.click();
+            document.body.removeChild(linkElement);
+        });
+
+        // Import data
+        importDataBtn.addEventListener('click', () => {
+            importInput.click();
+        });
+
+        importInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    // 验证数据结构
+                    if (data.projects && Array.isArray(data.projects) && data.focusSessions && Array.isArray(data.focusSessions)) {
+                        // 清空现有数据并导入新数据
+                        projects = data.projects;
+                        focusSessions = data.focusSessions;
+                        if (data.settings) {
+                            settings = data.settings;
+                        }
+                        // 保存到本地存储
+                        localStorage.setItem('projects', JSON.stringify(projects));
+                        localStorage.setItem('focusSessions', JSON.stringify(focusSessions));
+                        localStorage.setItem('settings', JSON.stringify(settings));
+                        
+                        alert('数据导入成功！');
+                        window.location.reload();
+                    } else {
+                        alert('无效的数据文件格式。');
+                    }
+                } catch (error) {
+                    console.error('Import error:', error);
+                    alert('导入失败：' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            // 重置 input，以便可以再次选择同一个文件
+            e.target.value = '';
+        });
+
+        // Reset data
+        resetDataBtn.addEventListener('click', () => {
+            resetModal.classList.remove('hidden');
+        });
+
+        cancelResetBtn.addEventListener('click', () => {
+            resetModal.classList.add('hidden');
+        });
+
+        confirmResetBtn.addEventListener('click', () => {
+            // 先隐藏模态框，再清空数据，最后刷新
+            resetModal.classList.add('hidden');
+            // 使用 setTimeout 确保 UI 更新
+            setTimeout(() => {
+                localStorage.removeItem('projects');
+                localStorage.removeItem('focusSessions');
+                localStorage.removeItem('settings');
+                alert('数据已清空。');
+                // 延迟刷新，确保用户看到提示
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }, 100);
+        });
+
+        // Initial load
+        loadSettings();
+        
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (settings.theme === 'system') {
+                applyTheme();
+            }
+        });
+
+    </script>
+</body>
+</html>

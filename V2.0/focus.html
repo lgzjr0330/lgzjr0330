@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静水流深 - 专注模式</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <style>
+        body {
+            background-image: url('https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/3612dd9e5eba4079aef2482ba3963936~tplv-a9rns2rl98-image.image?rcl=202512231857189AC3A4803BA12D453085&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1769079515&x-signature=BaAlGcbxuj4bL4%2BSuDbKUY0MlRo%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .timer-circle {
+            transition: stroke-dashoffset 1s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 dark:text-white transition-colors duration-500">
+    <div id="app" class="min-h-screen flex flex-col">
+        <header class="glass-card p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="moon" class="w-8 h-8 text-yellow-500"></i>
+                <h1 class="text-2xl font-bold">静水流深</h1>
+            </div>
+            <nav class="flex space-x-4">
+                <a href="index.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">项目管理</a>
+                <a href="focus.html" class="px-4 py-2 rounded-lg bg-white/10 transition">专注模式</a>
+                <a href="stats.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">数据统计</a>
+                <a href="settings.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">设置</a>
+            </nav>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-white/10">
+                <i data-lucide="sun" class="w-6 h-6"></i>
+            </button>
+        </header>
+
+        <main class="flex-grow p-8 flex items-center justify-center">
+            <div class="glass-card p-8 rounded-lg w-full max-w-2xl text-center">
+                <h2 class="text-3xl font-bold mb-8">专注当下</h2>
+                
+                <div class="mb-8">
+                    <select id="project-select" class="w-full p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                        <option value="">选择一个项目</option>
+                        <!-- Projects will be dynamically inserted here -->
+                    </select>
+                </div>
+
+                <div class="relative mx-auto w-64 h-64 mb-8">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="white/20" stroke-width="8"></circle>
+                        <circle id="timer-circle" class="timer-circle" cx="50" cy="50" r="45" fill="none" stroke="pink" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <p id="timer-display" class="text-5xl font-bold">25:00</p>
+                        <p id="current-project-name" class="text-lg opacity-70 mt-2">未选择项目</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-center space-x-4">
+                    <button id="start-btn" class="px-8 py-3 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition">
+                        <i data-lucide="play" class="w-6 h-6 inline-block mr-2"></i>开始
+                    </button>
+                    <button id="pause-btn" class="px-8 py-3 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition hidden">
+                        <i data-lucide="pause" class="w-6 h-6 inline-block mr-2"></i>暂停
+                    </button>
+                    <button id="stop-btn" class="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition hidden">
+                        <i data-lucide="stop" class="w-6 h-6 inline-block mr-2"></i>停止
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- End Focus Modal -->
+    <div id="end-focus-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden">
+        <div class="glass-card p-8 rounded-lg w-full max-w-lg">
+            <h2 class="text-2xl font-bold mb-6">结束专注</h2>
+            <p class="mb-4">你已专注了 <span id="session-duration">0</span> 分钟。</p>
+            <div class="mb-4">
+                <label for="custom-duration" class="block text-sm font-medium mb-2">自定义完成时间（分钟）：</label>
+                <input type="number" id="custom-duration" class="w-full p-2 bg-white/10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" min="1">
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button id="discard-session" class="px-4 py-2 rounded-lg hover:bg-white/10">放弃</button>
+                <button id="save-session" class="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // Theme toggle
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const icon = themeToggle.querySelector('i');
+            if (html.classList.contains('dark')) {
+                icon.setAttribute('data-lucide', 'moon');
+            } else {
+                icon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Load theme from localStorage
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            themeToggle.querySelector('i').setAttribute('data-lucide', 'moon');
+            lucide.createIcons();
+        }
+
+        // Data
+        let projects = JSON.parse(localStorage.getItem('projects')) || [];
+        let focusSessions = JSON.parse(localStorage.getItem('focusSessions')) || [];
+
+        const projectSelect = document.getElementById('project-select');
+        const timerDisplay = document.getElementById('timer-display');
+        const currentProjectName = document.getElementById('current-project-name');
+        const timerCircle = document.getElementById('timer-circle');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const endFocusModal = document.getElementById('end-focus-modal');
+        const sessionDuration = document.getElementById('session-duration');
+        const discardSessionBtn = document.getElementById('discard-session');
+        const saveSessionBtn = document.getElementById('save-session');
+
+        let timer;
+        let minutes = 25;
+        let seconds = 0;
+        let totalSeconds = minutes * 60;
+        let elapsedSeconds = 0;
+        let isPaused = false;
+        let currentProjectId = null;
+
+        // Load projects
+        function loadProjects() {
+            projectSelect.innerHTML = '<option value="">选择一个项目</option>';
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.title;
+                projectSelect.appendChild(option);
+            });
+
+            // Get project ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('projectId');
+            if (projectId && projects.some(p => p.id === projectId)) {
+                projectSelect.value = projectId;
+                projectSelected();
+            }
+        }
+
+        projectSelect.addEventListener('change', projectSelected);
+
+        function projectSelected() {
+            currentProjectId = projectSelect.value;
+            if (currentProjectId) {
+                const project = projects.find(p => p.id === currentProjectId);
+                currentProjectName.textContent = project.title;
+                project.status = '进行中';
+                saveData();
+            } else {
+                currentProjectName.textContent = '未选择项目';
+            }
+        }
+
+        function startTimer() {
+            if (!currentProjectId) {
+                alert('请先选择一个项目');
+                return;
+            }
+
+            startBtn.classList.add('hidden');
+            pauseBtn.classList.remove('hidden');
+            stopBtn.classList.remove('hidden');
+
+            if (!isPaused) {
+                minutes = 25;
+                seconds = 0;
+                totalSeconds = minutes * 60;
+                elapsedSeconds = 0;
+            }
+
+            isPaused = false;
+
+            timer = setInterval(() => {
+                elapsedSeconds++;
+                updateTimerDisplay();
+                updateTimerCircle();
+
+                if (elapsedSeconds >= totalSeconds) {
+                    endSession();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timer);
+            isPaused = true;
+            pauseBtn.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+        }
+
+        function stopTimer() {
+            clearInterval(timer);
+            endFocusModal.classList.remove('hidden');
+            sessionDuration.textContent = Math.floor(elapsedSeconds / 60);
+        }
+
+        function updateTimerDisplay() {
+            const remainingSeconds = totalSeconds - elapsedSeconds;
+            const mins = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerCircle() {
+            const percentage = (elapsedSeconds / totalSeconds) * 100;
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (percentage / 100) * circumference;
+            timerCircle.style.strokeDashoffset = offset;
+        }
+
+        function endSession() {
+            clearInterval(timer);
+            // Could show a notification or play a sound here
+            endFocusModal.classList.remove('hidden');
+            sessionDuration.textContent = Math.floor(elapsedSeconds / 60);
+        }
+
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        stopBtn.addEventListener('click', stopTimer);
+
+        discardSessionBtn.addEventListener('click', () => {
+            endFocusModal.classList.add('hidden');
+            resetTimer();
+            // 重置自定义时长输入框
+            document.getElementById('custom-duration').value = '';
+        });
+
+        saveSessionBtn.addEventListener('click', () => {
+            if (currentProjectId) {
+                const customDurationInput = document.getElementById('custom-duration');
+                const customDuration = customDurationInput.value ? parseInt(customDurationInput.value) : Math.floor(elapsedSeconds / 60);
+                
+                const session = {
+                    id: Date.now().toString(),
+                    projectId: currentProjectId,
+                    duration: customDuration, // in minutes
+                    date: new Date().toISOString(),
+                    completed: true
+                };
+                focusSessions.push(session);
+                
+                const project = projects.find(p => p.id === currentProjectId);
+                project.focusTime += session.duration;
+                
+                saveData();
+            }
+            endFocusModal.classList.add('hidden');
+            resetTimer();
+            // 重置自定义时长输入框
+            document.getElementById('custom-duration').value = '';
+        });
+
+        function resetTimer() {
+            clearInterval(timer);
+            minutes = 25;
+            seconds = 0;
+            totalSeconds = minutes * 60;
+            elapsedSeconds = 0;
+            isPaused = false;
+            updateTimerDisplay();
+            updateTimerCircle();
+            startBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+            stopBtn.classList.add('hidden');
+        }
+
+        function saveData() {
+            localStorage.setItem('projects', JSON.stringify(projects));
+            localStorage.setItem('focusSessions', JSON.stringify(focusSessions));
+        }
+        
+        loadProjects();
+        updateTimerDisplay();
+        updateTimerCircle();
+
+    </script>
+</body>
+</html>
