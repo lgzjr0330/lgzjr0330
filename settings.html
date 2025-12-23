@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 静水流深</title>
+    <script src="https://cdn.tailwindcss.com/3.4.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FEFEFE;
+            --text-primary: #2D3748;
+            --text-secondary: #718096;
+            --accent-primary: #D69E2E;
+            --success-color: #38A169;
+            --warning-color: #DD6B20;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(45, 55, 72, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1A202C;
+            --text-primary: #F7FAFC;
+            --text-secondary: #A0AEC0;
+            --accent-primary: #F6E05E;
+            --success-color: #48BB78;
+            --warning-color: #F56500;
+            --card-bg: rgba(26, 32, 44, 0.9);
+            --border-color: rgba(247, 250, 252, 0.1);
+        }
+
+        * {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image: url('resources/zen-bg.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+
+        .serif-font {
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-primary), var(--success-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: var(--border-color);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(30px);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .setting-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #B7791F);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(214, 158, 46, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #E53E3E, #C53030);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 62, 62, 0.3);
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 50;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(214, 158, 46, 0.1);
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .theme-option:hover,
+        .theme-option.active {
+            border-color: var(--accent-primary);
+            background: rgba(214, 158, 46, 0.05);
+        }
+
+        .theme-preview {
+            width: 60px;
+            height: 40px;
+            border-radius: 8px;
+            margin-right: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-light {
+            background: linear-gradient(135deg, #FEFEFE 0%, #F7FAFC 100%);
+            border: 1px solid #E2E8F0;
+        }
+
+        .theme-dark {
+            background: linear-gradient(135deg, #1A202C 0%, #2D3748 100%);
+            border: 1px solid #4A5568;
+        }
+
+        .data-stat {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .data-stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .data-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .setting-info {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="back-btn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    返回项目
+                </a>
+
+                <div class="flex items-center space-x-3">
+                    <h1 class="text-xl font-bold serif-font gradient-text">设置</h1>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="w-20"></div> <!-- 占位保持居中 -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="pt-20 min-h-screen">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- 应用信息 -->
+            <div class="glass-card rounded-xl p-6 mb-8 floating-animation">
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold serif-font gradient-text mb-2">静水流深</h2>
+                    <p class="text-gray-500 mb-4">诗意项目管理应用</p>
+                    <div class="flex justify-center space-x-8 text-sm text-gray-500">
+                        <span>版本 1.0.0</span>
+                        <span>•</span>
+                        <span>本地数据存储</span>
+                        <span>•</span>
+                        <span>隐私保护</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主题设置 -->
+            <div class="glass-card rounded-xl mb-8 floating-animation" style="animation-delay: 0.2s;">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold serif-font">外观设置</h3>
+                    <p class="text-sm text-gray-500">选择你喜欢的视觉主题</p>
+                </div>
+                
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="theme-option" data-theme="light">
+                            <div class="theme-preview theme-light"></div>
+                            <div class="flex-1">
+                                <h4 class="font-medium">亮色主题</h4>
+                                <p class="text-sm text-gray-500">温润的米白色背景，如晨光般温暖</p>
+                            </div>
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 theme-radio"></div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="dark">
+                            <div class="theme-preview theme-dark"></div>
+                            <div class="flex-1">
+                                <h4 class="font-medium">暗色主题</h4>
+                                <p class="text-sm text-gray-500">深邃的夜空背景，如星辰般神秘</p>
+                            </div>
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 theme-radio"></div>
+                        </div>
+                        
+                        <div class="theme-option" data-theme="auto">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #FEFEFE 50%, #1A202C 50%);"></div>
+                            <div class="flex-1">
+                                <h4 class="font-medium">跟随系统</h4>
+                                <p class="text-sm text-gray-500">自动适应系统主题设置</p>
+                            </div>
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 theme-radio"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 通知设置 -->
+            <div class="glass-card rounded-xl mb-8 floating-animation" style="animation-delay: 0.4s;">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold serif-font">通知设置</h3>
+                    <p class="text-sm text-gray-500">管理应用的通知和提醒</p>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">桌面通知</div>
+                        <div class="setting-desc">在专注完成时显示桌面通知</div>
+                    </div>
+                    <div class="toggle-switch" id="desktop-notifications-toggle"></div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">声音提醒</div>
+                        <div class="setting-desc">专注完成时播放提示音</div>
+                    </div>
+                    <div class="toggle-switch" id="sound-notifications-toggle"></div>
+                </div>
+            </div>
+
+            <!-- 专注设置 -->
+            <div class="glass-card rounded-xl mb-8 floating-animation" style="animation-delay: 0.6s;">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold serif-font">专注设置</h3>
+                    <p class="text-sm text-gray-500">个性化你的专注体验</p>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">默认专注时长</div>
+                        <div class="setting-desc">开始专注时的默认时间</div>
+                    </div>
+                    <select class="input-field" id="default-duration-select">
+                        <option value="900">15分钟</option>
+                        <option value="1500" selected>25分钟</option>
+                        <option value="1800">30分钟</option>
+                        <option value="2700">45分钟</option>
+                        <option value="3600">60分钟</option>
+                    </select>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">每日目标</div>
+                        <div class="setting-desc">设置每日专注时间目标</div>
+                    </div>
+                    <select class="input-field" id="daily-goal-select">
+                        <option value="3600">1小时</option>
+                        <option value="7200" selected>2小时</option>
+                        <option value="10800">3小时</option>
+                        <option value="14400">4小时</option>
+                        <option value="18000">5小时</option>
+                        <option value="25200">7小时</option>
+                        <option value="28800">8小时</option>
+                    </select>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">自动开始休息</div>
+                        <div class="setting-desc">专注结束后自动开始休息时间</div>
+                    </div>
+                    <div class="toggle-switch" id="auto-break-toggle"></div>
+                </div>
+            </div>
+
+            <!-- 数据管理 -->
+            <div class="glass-card rounded-xl mb-8 floating-animation" style="animation-delay: 0.8s;">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold serif-font">数据管理</h3>
+                    <p class="text-sm text-gray-500">备份、恢复和管理你的数据</p>
+                </div>
+                
+                <!-- 数据统计 -->
+                <div class="grid grid-cols-3 gap-4 p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div class="data-stat">
+                        <div class="data-stat-value" id="projects-count">0</div>
+                        <div class="data-stat-label">项目数量</div>
+                    </div>
+                    <div class="data-stat">
+                        <div class="data-stat-value" id="sessions-count">0</div>
+                        <div class="data-stat-label">专注次数</div>
+                    </div>
+                    <div class="data-stat">
+                        <div class="data-stat-value" id="total-time-count">0h</div>
+                        <div class="data-stat-label">总时长</div>
+                    </div>
+                </div>
+                
+                <div class="p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button class="btn-secondary flex-1" id="export-data-btn">
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            导出数据
+                        </button>
+                        
+                        <label class="file-label flex-1 text-center cursor-pointer">
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                            </svg>
+                            导入数据
+                            <input type="file" class="file-input" id="import-data-input" accept=".json">
+                        </label>
+                    </div>
+                    
+                    <button class="btn-danger w-full" id="clear-data-btn">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        归墟（清空所有数据）
+                    </button>
+                </div>
+            </div>
+
+            <!-- 关于信息 -->
+            <div class="glass-card rounded-xl floating-animation" style="animation-delay: 1s;">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold serif-font mb-4">关于静水流深</h3>
+                    <div class="space-y-4 text-sm text-gray-600 dark:text-gray-400">
+                        <p>"静水流深"是一款充满诗意的项目管理应用，旨在帮助用户以更加优雅和专注的方式管理时间和项目。</p>
+                        <p>我们相信，每一次专注都是生命中的珍贵时光，每一个项目都是成长路上的重要里程碑。通过将东方美学的宁静与现代工具的效率相结合，我们希望能够为你创造一个既实用又富有灵性的数字空间。</p>
+                        <div class="flex flex-wrap gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                本地存储
+                            </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                隐私保护
+                            </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                                开源免费
+                            </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+                                诗意设计
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 确认模态框 -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="glass-card rounded-xl p-6 w-full max-w-md relative">
+                <h3 class="text-xl font-bold serif-font mb-4" id="modal-title">确认操作</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-6" id="modal-message">确定要执行此操作吗？</p>
+                <div class="flex space-x-3">
+                    <button class="btn-secondary flex-1" id="modal-cancel">取消</button>
+                    <button class="btn-danger flex-1" id="modal-confirm">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SettingsManager {
+            constructor() {
+                this.settings = this.loadSettings();
+                this.projects = this.loadProjects();
+                this.focusSessions = this.loadFocusSessions();
+                
+                this.init();
+            }
+
+            init() {
+                this.initTheme();
+                this.bindEvents();
+                this.updateDataStats();
+                this.loadSettingsUI();
+                this.initAnimations();
+            }
+
+            loadSettings() {
+                const saved = localStorage.getItem('settings');
+                return saved ? JSON.parse(saved) : {
+                    theme: 'light',
+                    notifications: { desktop: true, sound: true },
+                    focus: { defaultDuration: 1500, dailyGoal: 7200, autoBreak: true }
+                };
+            }
+
+            loadProjects() {
+                const saved = localStorage.getItem('projects');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            loadFocusSessions() {
+                const saved = localStorage.getItem('focusSessions');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            saveSettings() {
+                localStorage.setItem('settings', JSON.stringify(this.settings));
+            }
+
+            initTheme() {
+                document.documentElement.setAttribute('data-theme', this.settings.theme);
+                this.updateThemeSelection();
+            }
+
+            bindEvents() {
+                // 主题选择
+                document.querySelectorAll('.theme-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        this.selectTheme(option.getAttribute('data-theme'));
+                    });
+                });
+
+                // 通知设置
+                document.getElementById('desktop-notifications-toggle').addEventListener('click', () => {
+                    this.toggleSetting('notifications', 'desktop');
+                });
+
+                document.getElementById('sound-notifications-toggle').addEventListener('click', () => {
+                    this.toggleSetting('notifications', 'sound');
+                });
+
+                // 专注设置
+                document.getElementById('default-duration-select').addEventListener('change', (e) => {
+                    this.settings.focus.defaultDuration = parseInt(e.target.value);
+                    this.saveSettings();
+                    this.showNotification('默认专注时长已更新', 'success');
+                });
+
+                document.getElementById('daily-goal-select').addEventListener('change', (e) => {
+                    this.settings.focus.dailyGoal = parseInt(e.target.value);
+                    this.saveSettings();
+                    this.showNotification('每日目标已更新', 'success');
+                });
+
+                document.getElementById('auto-break-toggle').addEventListener('click', () => {
+                    this.toggleSetting('focus', 'autoBreak');
+                });
+
+                // 数据管理
+                document.getElementById('export-data-btn').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                document.getElementById('import-data-input').addEventListener('change', (e) => {
+                    this.importData(e.target.files[0]);
+                });
+
+                document.getElementById('clear-data-btn').addEventListener('click', () => {
+                    this.showConfirmModal(
+                        '确认清空数据',
+                        '确定要清空所有数据吗？此操作无法撤销，建议先导出数据备份。',
+                        () => this.clearAllData()
+                    );
+                });
+
+                // 模态框事件
+                document.getElementById('modal-cancel').addEventListener('click', () => {
+                    this.hideConfirmModal();
+                });
+
+                document.getElementById('modal-confirm').addEventListener('click', () => {
+                    if (this.confirmCallback) {
+                        this.confirmCallback();
+                    }
+                    this.hideConfirmModal();
+                });
+
+                // 点击模态框背景关闭
+                document.getElementById('confirm-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'confirm-modal') {
+                        this.hideConfirmModal();
+                    }
+                });
+            }
+
+            selectTheme(theme) {
+                this.settings.theme = theme;
+                this.saveSettings();
+                document.documentElement.setAttribute('data-theme', theme);
+                this.updateThemeSelection();
+                this.showNotification('主题已切换，如光影流转', 'success');
+            }
+
+            updateThemeSelection() {
+                document.querySelectorAll('.theme-option').forEach(option => {
+                    const theme = option.getAttribute('data-theme');
+                    const radio = option.querySelector('.theme-radio');
+                    
+                    if (theme === this.settings.theme) {
+                        option.classList.add('active');
+                        radio.style.background = 'var(--accent-primary)';
+                        radio.style.borderColor = 'var(--accent-primary)';
+                    } else {
+                        option.classList.remove('active');
+                        radio.style.background = 'transparent';
+                        radio.style.borderColor = '#D1D5DB';
+                    }
+                });
+            }
+
+            toggleSetting(category, key) {
+                this.settings[category][key] = !this.settings[category][key];
+                this.saveSettings();
+                this.updateToggleUI(category, key);
+                
+                const messages = {
+                    notifications: {
+                        desktop: this.settings.notifications.desktop ? '桌面通知已开启' : '桌面通知已关闭',
+                        sound: this.settings.notifications.sound ? '声音提醒已开启' : '声音提醒已关闭'
+                    },
+                    focus: {
+                        autoBreak: this.settings.focus.autoBreak ? '自动休息已开启' : '自动休息已关闭'
+                    }
+                };
+                
+                this.showNotification(messages[category][key], 'info');
+            }
+
+            updateToggleUI(category, key) {
+                const toggleMap = {
+                    'notifications.desktop': 'desktop-notifications-toggle',
+                    'notifications.sound': 'sound-notifications-toggle',
+                    'focus.autoBreak': 'auto-break-toggle'
+                };
+
+                const toggleId = toggleMap[`${category}.${key}`];
+                if (toggleId) {
+                    const toggle = document.getElementById(toggleId);
+                    if (this.settings[category][key]) {
+                        toggle.classList.add('active');
+                    } else {
+                        toggle.classList.remove('active');
+                    }
+                }
+            }
+
+            loadSettingsUI() {
+                // 加载通知设置
+                this.updateToggleUI('notifications', 'desktop');
+                this.updateToggleUI('notifications', 'sound');
+                this.updateToggleUI('focus', 'autoBreak');
+
+                // 加载专注设置
+                document.getElementById('default-duration-select').value = this.settings.focus.defaultDuration;
+                document.getElementById('daily-goal-select').value = this.settings.focus.dailyGoal;
+            }
+
+            updateDataStats() {
+                const projectsCount = this.projects.length;
+                const sessionsCount = this.focusSessions.length;
+                const totalTime = this.focusSessions.reduce((sum, session) => sum + session.duration, 0);
+                const totalHours = Math.floor(totalTime / 3600);
+                const totalMinutes = Math.floor((totalTime % 3600) / 60);
+
+                document.getElementById('projects-count').textContent = projectsCount;
+                document.getElementById('sessions-count').textContent = sessionsCount;
+                document.getElementById('total-time-count').textContent = `${totalHours}h ${totalMinutes}m`;
+            }
+
+            exportData() {
+                const data = {
+                    projects: this.projects,
+                    focusSessions: this.focusSessions,
+                    settings: this.settings,
+                    exportDate: new Date().toISOString(),
+                    version: '1.0.0'
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `静水流深-数据备份-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                this.showNotification('数据已导出，如流水般清澈', 'success');
+            }
+
+            importData(file) {
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (data.projects && data.focusSessions && data.settings) {
+                            this.showConfirmModal(
+                                '确认导入数据',
+                                '导入数据将覆盖现有数据，确定要继续吗？',
+                                () => {
+                                    localStorage.setItem('projects', JSON.stringify(data.projects));
+                                    localStorage.setItem('focusSessions', JSON.stringify(data.focusSessions));
+                                    localStorage.setItem('settings', JSON.stringify(data.settings));
+                                    
+                                    this.projects = data.projects;
+                                    this.focusSessions = data.focusSessions;
+                                    this.settings = data.settings;
+                                    
+                                    this.initTheme();
+                                    this.updateDataStats();
+                                    this.loadSettingsUI();
+                                    
+                                    this.showNotification('数据已导入，时光重新流转', 'success');
+                                }
+                            );
+                        } else {
+                            throw new Error('数据格式不正确');
+                        }
+                    } catch (error) {
+                        this.showNotification('数据导入失败，请检查文件格式', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            clearAllData() {
+                localStorage.removeItem('projects');
+                localStorage.removeItem('focusSessions');
+                localStorage.removeItem('settings');
+                
+                this.projects = [];
+                this.focusSessions = [];
+                this.settings = this.loadSettings();
+                
+                this.initTheme();
+                this.updateDataStats();
+                this.loadSettingsUI();
+                
+                this.showNotification('所有数据已归墟，如梦幻泡影', 'info');
+            }
+
+            showConfirmModal(title, message, callback) {
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-message').textContent = message;
+                this.confirmCallback = callback;
+                document.getElementById('confirm-modal').classList.remove('hidden');
+            }
+
+            hideConfirmModal() {
+                document.getElementById('confirm-modal').classList.add('hidden');
+                this.confirmCallback = null;
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-24 right-4 glass-card rounded-lg p-4 text-white z-50 transform translate-x-full transition-transform duration-300`;
+                
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    warning: 'bg-yellow-500',
+                    info: 'bg-blue-500'
+                };
+
+                notification.classList.add(colors[type]);
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-1">
+                            <p class="text-sm font-medium">${message}</p>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, 3000);
+            }
+
+            initAnimations() {
+                // 页面加载动画
+                anime({
+                    targets: '.floating-animation',
+                    translateY: [-20, 0],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100),
+                    duration: 800,
+                    easing: 'easeOutCubic'
+                });
+            }
+        }
+
+        // 初始化设置管理器
+        const settingsManager = new SettingsManager();
+    </script>
+</body>
+</html>

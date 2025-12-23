@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专注模式 - 静水流深</title>
+    <script src="https://cdn.tailwindcss.com/3.4.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FEFEFE;
+            --text-primary: #2D3748;
+            --text-secondary: #718096;
+            --accent-primary: #D69E2E;
+            --success-color: #38A169;
+            --warning-color: #DD6B20;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(45, 55, 72, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1A202C;
+            --text-primary: #F7FAFC;
+            --text-secondary: #A0AEC0;
+            --accent-primary: #F6E05E;
+            --success-color: #48BB78;
+            --warning-color: #F56500;
+            --card-bg: rgba(26, 32, 44, 0.9);
+            --border-color: rgba(247, 250, 252, 0.1);
+        }
+
+        * {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .serif-font {
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .focus-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('resources/flowing-water.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            z-index: -1;
+        }
+
+        [data-theme="dark"] .focus-bg {
+            background-image: url('resources/night-sky.jpg');
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--border-color);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .timer-progress {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-primary) 0deg, transparent 0deg);
+            transition: background 0.1s linear;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: 300;
+            font-family: 'Noto Serif SC', serif;
+            color: var(--text-primary);
+            z-index: 2;
+            text-align: center;
+        }
+
+        .timer-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            z-index: 2;
+        }
+
+        .control-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-primary);
+            box-shadow: 0 8px 25px rgba(214, 158, 46, 0.2);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(135deg, var(--accent-primary), #B7791F);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .breathing-animation {
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .project-info {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .project-category {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(214, 158, 46, 0.2);
+            color: var(--accent-primary);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .session-counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .session-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .session-dot.completed {
+            background: var(--success-color);
+        }
+
+        .session-dot.current {
+            background: var(--accent-primary);
+            transform: scale(1.5);
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 50;
+            padding: 1rem 2rem;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        .settings-btn {
+            padding: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        .focus-stats {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .notification-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .notification-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .timer-presets {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .preset-btn {
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .preset-btn:hover,
+        .preset-btn.active {
+            border-color: var(--accent-primary);
+            background: rgba(214, 158, 46, 0.1);
+            color: var(--accent-primary);
+        }
+
+        @media (max-width: 768px) {
+            .timer-circle {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .timer-progress {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .timer-display {
+                font-size: 3rem;
+            }
+            
+            .control-btn {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .focus-stats {
+                bottom: 1rem;
+                left: 1rem;
+                right: 1rem;
+                transform: none;
+                padding: 0.75rem 1rem;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景 -->
+    <div class="focus-bg"></div>
+
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="index.html" class="back-btn">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                返回项目
+            </a>
+            
+            <div class="flex items-center space-x-3">
+                <h1 class="text-lg font-semibold serif-font">专注模式</h1>
+                <div class="w-2 h-2 bg-green-400 rounded-full pulse-animation"></div>
+            </div>
+            
+            <button class="settings-btn" id="settings-btn">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="pt-20 pb-32 min-h-screen flex flex-col items-center justify-center">
+        <!-- 项目信息 -->
+        <div class="project-info floating-animation mb-8">
+            <h2 class="project-title" id="project-title">选择一个项目开始专注</h2>
+            <div class="project-category" id="project-category">工作</div>
+            <p class="text-sm text-gray-500" id="project-description">专注于当前项目，让时间如流水般自然</p>
+        </div>
+
+        <!-- 计时器预设 -->
+        <div class="timer-presets">
+            <button class="preset-btn active" data-minutes="25">25分钟</button>
+            <button class="preset-btn" data-minutes="15">15分钟</button>
+            <button class="preset-btn" data-minutes="45">45分钟</button>
+            <button class="preset-btn" data-minutes="60">60分钟</button>
+            <button class="preset-btn" data-minutes="custom">自定义</button>
+        </div>
+
+        <!-- 计时器 -->
+        <div class="timer-circle breathing-animation mb-8">
+            <div class="timer-progress" id="timer-progress"></div>
+            <div class="timer-display" id="timer-display">25:00</div>
+            <div class="timer-label" id="timer-label">准备开始</div>
+        </div>
+
+        <!-- 专注会话指示器 -->
+        <div class="session-counter mb-8">
+            <div class="session-dot completed"></div>
+            <div class="session-dot completed"></div>
+            <div class="session-dot current"></div>
+            <div class="session-dot"></div>
+            <div class="session-dot"></div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="flex space-x-6">
+            <button class="control-btn" id="reset-btn" title="重置">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+            </button>
+            
+            <button class="control-btn primary" id="play-pause-btn" title="开始">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" id="play-icon">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                </svg>
+                <svg class="w-8 h-8 hidden" fill="currentColor" viewBox="0 0 20 20" id="pause-icon">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            
+            <button class="control-btn" id="stop-btn" title="停止">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 012 0v6a1 1 0 11-2 0V7zM12 7a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+        </div>
+    </main>
+
+    <!-- 底部统计 -->
+    <div class="focus-stats">
+        <div class="stat-item">
+            <div class="stat-value" id="today-sessions">0</div>
+            <div class="stat-label">今日专注</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="total-time">00:00</div>
+            <div class="stat-label">本次时长</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="focus-streak">0</div>
+            <div class="stat-label">连续天数</div>
+        </div>
+    </div>
+
+    <!-- 完成通知 -->
+    <div class="notification-overlay" id="notification-overlay"></div>
+    <div class="notification" id="completion-notification">
+        <div class="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-green-500 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <h3 class="text-xl font-bold serif-font mb-2">专注完成</h3>
+        <p class="text-gray-500 mb-6" id="completion-message">时光已记录，专注如流水</p>
+        <div class="flex space-x-3">
+            <button class="control-btn primary px-6" id="continue-btn">继续</button>
+            <button class="control-btn px-6" id="finish-btn">完成</button>
+        </div>
+    </div>
+
+    <!-- 项目选择模态框 -->
+    <div class="notification-overlay" id="project-select-overlay"></div>
+    <div class="notification" id="project-select-modal">
+        <h3 class="text-xl font-bold serif-font mb-6">选择专注项目</h3>
+        <div class="space-y-3 max-h-64 overflow-y-auto" id="project-list">
+            <!-- 项目列表将通过JavaScript生成 -->
+        </div>
+        <button class="control-btn primary w-full mt-6" id="close-project-select">取消</button>
+    </div>
+
+    <script>
+        class FocusTimer {
+            constructor() {
+                this.isRunning = false;
+                this.isPaused = false;
+                this.currentTime = 25 * 60; // 25分钟，以秒为单位
+                this.totalTime = 25 * 60;
+                this.currentProject = null;
+                this.focusSessions = this.loadFocusSessions();
+                this.projects = this.loadProjects();
+                this.sessionStartTime = null;
+                this.pausedTime = 0;
+                
+                this.init();
+            }
+
+            init() {
+                this.initTheme();
+                this.loadCurrentProject();
+                this.bindEvents();
+                this.updateDisplay();
+                this.updateStats();
+                this.initAnimations();
+            }
+
+            initTheme() {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+
+            loadProjects() {
+                const saved = localStorage.getItem('projects');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            loadFocusSessions() {
+                const saved = localStorage.getItem('focusSessions');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            loadCurrentProject() {
+                const projectId = localStorage.getItem('currentFocusProject');
+                if (projectId) {
+                    this.currentProject = this.projects.find(p => p.id === projectId);
+                    if (this.currentProject) {
+                        this.updateProjectInfo();
+                    }
+                }
+            }
+
+            updateProjectInfo() {
+                if (!this.currentProject) return;
+
+                const categoryNames = {
+                    work: '工作',
+                    study: '学习',
+                    life: '生活',
+                    creative: '创意'
+                };
+
+                document.getElementById('project-title').textContent = this.currentProject.name;
+                document.getElementById('project-category').textContent = categoryNames[this.currentProject.category];
+                document.getElementById('project-description').textContent = this.currentProject.description || '专注于当前项目，让时间如流水般自然';
+            }
+
+            bindEvents() {
+                // 播放/暂停按钮
+                const playPauseBtn = document.getElementById('play-pause-btn');
+                playPauseBtn.addEventListener('click', () => {
+                    this.toggleTimer();
+                });
+
+                // 重置按钮
+                const resetBtn = document.getElementById('reset-btn');
+                resetBtn.addEventListener('click', () => {
+                    this.resetTimer();
+                });
+
+                // 停止按钮
+                const stopBtn = document.getElementById('stop-btn');
+                stopBtn.addEventListener('click', () => {
+                    this.stopTimer();
+                });
+
+                // 预设时间按钮
+                const presetBtns = document.querySelectorAll('.preset-btn');
+                presetBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (!this.isRunning) {
+                            this.setPresetTime(btn);
+                        }
+                    });
+                });
+
+                // 完成通知按钮
+                document.getElementById('continue-btn').addEventListener('click', () => {
+                    this.hideCompletionNotification();
+                    this.resetTimer();
+                });
+
+                document.getElementById('finish-btn').addEventListener('click', () => {
+                    this.hideCompletionNotification();
+                    this.saveFocusSession();
+                    window.location.href = 'index.html';
+                });
+
+                // 项目选择
+                document.getElementById('close-project-select').addEventListener('click', () => {
+                    this.hideProjectSelect();
+                });
+
+                // 设置按钮
+                document.getElementById('settings-btn').addEventListener('click', () => {
+                    this.showProjectSelect();
+                });
+            }
+
+            setPresetTime(btn) {
+                const minutes = btn.getAttribute('data-minutes');
+                
+                if (minutes === 'custom') {
+                    const customMinutes = prompt('请输入专注时间（分钟）：', '30');
+                    if (customMinutes && !isNaN(customMinutes) && customMinutes > 0) {
+                        this.setTime(parseInt(customMinutes) * 60);
+                    }
+                } else {
+                    this.setTime(parseInt(minutes) * 60);
+                }
+
+                // 更新按钮状态
+                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+
+            setTime(seconds) {
+                this.currentTime = seconds;
+                this.totalTime = seconds;
+                this.updateDisplay();
+            }
+
+            toggleTimer() {
+                if (!this.isRunning && !this.isPaused) {
+                    // 开始计时
+                    this.startTimer();
+                } else if (this.isRunning) {
+                    // 暂停计时
+                    this.pauseTimer();
+                } else if (this.isPaused) {
+                    // 恢复计时
+                    this.resumeTimer();
+                }
+            }
+
+            startTimer() {
+                if (!this.currentProject) {
+                    this.showProjectSelect();
+                    return;
+                }
+
+                this.isRunning = true;
+                this.isPaused = false;
+                this.sessionStartTime = new Date();
+                this.pausedTime = 0;
+
+                document.getElementById('play-icon').classList.add('hidden');
+                document.getElementById('pause-icon').classList.remove('hidden');
+                document.getElementById('timer-label').textContent = '专注中...';
+
+                this.timer = setInterval(() => {
+                    this.currentTime--;
+                    this.updateDisplay();
+
+                    if (this.currentTime <= 0) {
+                        this.completeTimer();
+                    }
+                }, 1000);
+
+                this.showNotification('专注开始，心如止水', 'success');
+            }
+
+            pauseTimer() {
+                this.isRunning = false;
+                this.isPaused = true;
+                clearInterval(this.timer);
+
+                document.getElementById('play-icon').classList.remove('hidden');
+                document.getElementById('pause-icon').classList.add('hidden');
+                document.getElementById('timer-label').textContent = '已暂停';
+
+                this.showNotification('专注暂停，如微风轻拂', 'info');
+            }
+
+            resumeTimer() {
+                this.isRunning = true;
+                this.isPaused = false;
+
+                document.getElementById('play-icon').classList.add('hidden');
+                document.getElementById('pause-icon').classList.remove('hidden');
+                document.getElementById('timer-label').textContent = '专注中...';
+
+                this.timer = setInterval(() => {
+                    this.currentTime--;
+                    this.updateDisplay();
+
+                    if (this.currentTime <= 0) {
+                        this.completeTimer();
+                    }
+                }, 1000);
+
+                this.showNotification('专注恢复，如流水继续', 'success');
+            }
+
+            resetTimer() {
+                this.isRunning = false;
+                this.isPaused = false;
+                clearInterval(this.timer);
+
+                const activePreset = document.querySelector('.preset-btn.active');
+                if (activePreset) {
+                    const minutes = activePreset.getAttribute('data-minutes');
+                    if (minutes !== 'custom') {
+                        this.currentTime = parseInt(minutes) * 60;
+                        this.totalTime = this.currentTime;
+                    }
+                }
+
+                document.getElementById('play-icon').classList.remove('hidden');
+                document.getElementById('pause-icon').classList.add('hidden');
+                document.getElementById('timer-label').textContent = '准备开始';
+
+                this.updateDisplay();
+            }
+
+            stopTimer() {
+                if (this.isRunning || this.isPaused) {
+                    const confirmed = confirm('确定要停止当前专注吗？本次专注时间将不会被记录。');
+                    if (!confirmed) return;
+                }
+
+                this.isRunning = false;
+                this.isPaused = false;
+                clearInterval(this.timer);
+
+                document.getElementById('play-icon').classList.remove('hidden');
+                document.getElementById('pause-icon').classList.add('hidden');
+                document.getElementById('timer-label').textContent = '专注已停止';
+
+                this.resetTimer();
+                this.showNotification('专注已停止，如落叶归根', 'warning');
+            }
+
+            completeTimer() {
+                this.isRunning = false;
+                this.isPaused = false;
+                clearInterval(this.timer);
+
+                document.getElementById('play-icon').classList.remove('hidden');
+                document.getElementById('pause-icon').classList.add('hidden');
+                document.getElementById('timer-label').textContent = '专注完成';
+
+                this.showCompletionNotification();
+                this.playCompletionSound();
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.currentTime / 60);
+                const seconds = this.currentTime % 60;
+                const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                document.getElementById('timer-display').textContent = display;
+
+                // 更新进度圆环
+                const progress = ((this.totalTime - this.currentTime) / this.totalTime) * 360;
+                document.getElementById('timer-progress').style.background = 
+                    `conic-gradient(var(--accent-primary) ${progress}deg, transparent ${progress}deg)`;
+
+                // 更新底部统计
+                const elapsed = this.totalTime - this.currentTime;
+                const elapsedMinutes = Math.floor(elapsed / 60);
+                const elapsedSeconds = elapsed % 60;
+                document.getElementById('total-time').textContent = 
+                    `${elapsedMinutes.toString().padStart(2, '0')}:${elapsedSeconds.toString().padStart(2, '0')}`;
+            }
+
+            updateStats() {
+                const today = new Date();
+                const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                
+                // 今日专注次数
+                const todaySessions = this.focusSessions.filter(session => 
+                    new Date(session.startTime) >= todayStart
+                ).length;
+                document.getElementById('today-sessions').textContent = todaySessions;
+
+                // 连续天数（简化计算）
+                const streak = this.calculateStreak();
+                document.getElementById('focus-streak').textContent = streak;
+            }
+
+            calculateStreak() {
+                if (this.focusSessions.length === 0) return 0;
+
+                const sessions = this.focusSessions.sort((a, b) => 
+                    new Date(b.startTime) - new Date(a.startTime)
+                );
+
+                let streak = 0;
+                let currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0);
+
+                for (let session of sessions) {
+                    const sessionDate = new Date(session.startTime);
+                    sessionDate.setHours(0, 0, 0, 0);
+
+                    const diffDays = Math.floor((currentDate - sessionDate) / (1000 * 60 * 60 * 24));
+
+                    if (diffDays === streak) {
+                        streak++;
+                        currentDate.setDate(currentDate.getDate() - 1);
+                    } else if (diffDays > streak) {
+                        break;
+                    }
+                }
+
+                return streak;
+            }
+
+            showCompletionNotification() {
+                const overlay = document.getElementById('notification-overlay');
+                const notification = document.getElementById('completion-notification');
+                
+                overlay.classList.add('show');
+                notification.classList.add('show');
+
+                const elapsed = this.totalTime - this.currentTime;
+                const minutes = Math.floor(elapsed / 60);
+                const message = `恭喜完成专注！本次专注时长：${minutes}分钟。时光已记录，专注如流水。`;
+                document.getElementById('completion-message').textContent = message;
+            }
+
+            hideCompletionNotification() {
+                const overlay = document.getElementById('notification-overlay');
+                const notification = document.getElementById('completion-notification');
+                
+                overlay.classList.remove('show');
+                notification.classList.remove('show');
+            }
+
+            showProjectSelect() {
+                const overlay = document.getElementById('project-select-overlay');
+                const modal = document.getElementById('project-select-modal');
+                const projectList = document.getElementById('project-list');
+
+                // 生成项目列表
+                const activeProjects = this.projects.filter(p => p.status !== 'completed');
+                projectList.innerHTML = activeProjects.map(project => `
+                    <button class="project-select-btn w-full p-3 text-left rounded-lg border border-gray-200 dark:border-gray-700 hover:border-yellow-400 dark:hover:border-yellow-400 transition-colors" data-project-id="${project.id}">
+                        <div class="font-medium">${project.name}</div>
+                        <div class="text-sm text-gray-500">${project.description || '无描述'}</div>
+                    </button>
+                `).join('');
+
+                // 绑定项目选择事件
+                document.querySelectorAll('.project-select-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const projectId = btn.getAttribute('data-project-id');
+                        this.selectProject(projectId);
+                        this.hideProjectSelect();
+                    });
+                });
+
+                overlay.classList.add('show');
+                modal.classList.add('show');
+            }
+
+            hideProjectSelect() {
+                const overlay = document.getElementById('project-select-overlay');
+                const modal = document.getElementById('project-select-modal');
+                
+                overlay.classList.remove('show');
+                modal.classList.remove('show');
+            }
+
+            selectProject(projectId) {
+                this.currentProject = this.projects.find(p => p.id === projectId);
+                if (this.currentProject) {
+                    localStorage.setItem('currentFocusProject', projectId);
+                    this.updateProjectInfo();
+                    this.showNotification('项目已选择，准备专注', 'success');
+                }
+            }
+
+            saveFocusSession() {
+                if (!this.currentProject || !this.sessionStartTime) return;
+
+                const elapsed = this.totalTime - this.currentTime;
+                if (elapsed <= 0) return;
+
+                const session = {
+                    id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+                    projectId: this.currentProject.id,
+                    startTime: this.sessionStartTime.toISOString(),
+                    endTime: new Date().toISOString(),
+                    duration: elapsed,
+                    plannedDuration: this.totalTime,
+                    status: 'completed',
+                    type: '自由专注'
+                };
+
+                this.focusSessions.push(session);
+                localStorage.setItem('focusSessions', JSON.stringify(this.focusSessions));
+
+                // 更新项目的专注时间
+                this.currentProject.totalFocusTime += elapsed;
+                this.currentProject.focusSessions.push(session.id);
+                
+                const projects = this.loadProjects();
+                const projectIndex = projects.findIndex(p => p.id === this.currentProject.id);
+                if (projectIndex !== -1) {
+                    projects[projectIndex] = this.currentProject;
+                    localStorage.setItem('projects', JSON.stringify(projects));
+                }
+
+                this.showNotification('专注时光已记录，如流水般清澈', 'success');
+            }
+
+            playCompletionSound() {
+                // 创建简单的提示音
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            }
+
+            showNotification(message, type = 'info') {
+                // 简单的通知提示
+                const notification = document.createElement('div');
+                notification.className = `fixed top-24 right-4 glass-card rounded-lg p-4 text-white z-50 transform translate-x-full transition-transform duration-300`;
+                
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    warning: 'bg-yellow-500',
+                    info: 'bg-blue-500'
+                };
+
+                notification.classList.add(colors[type]);
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-1">
+                            <p class="text-sm font-medium">${message}</p>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, 3000);
+            }
+
+            initAnimations() {
+                // 页面加载动画
+                anime({
+                    targets: '.floating-animation',
+                    translateY: [-20, 0],
+                    opacity: [0, 1],
+                    duration: 1000,
+                    easing: 'easeOutCubic'
+                });
+
+                anime({
+                    targets: '.breathing-animation',
+                    scale: [0.95, 1],
+                    duration: 2000,
+                    easing: 'easeInOutSine',
+                    loop: true,
+                    direction: 'alternate'
+                });
+            }
+        }
+
+        // 初始化专注计时器
+        const focusTimer = new FocusTimer();
+    </script>
+</body>
+</html>

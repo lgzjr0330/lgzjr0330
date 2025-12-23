@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据统计 - 静水流深</title>
+    <script src="https://cdn.tailwindcss.com/3.4.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FEFEFE;
+            --text-primary: #2D3748;
+            --text-secondary: #718096;
+            --accent-primary: #D69E2E;
+            --success-color: #38A169;
+            --warning-color: #DD6B20;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(45, 55, 72, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1A202C;
+            --text-primary: #F7FAFC;
+            --text-secondary: #A0AEC0;
+            --accent-primary: #F6E05E;
+            --success-color: #48BB78;
+            --warning-color: #F56500;
+            --card-bg: rgba(26, 32, 44, 0.9);
+            --border-color: rgba(247, 250, 252, 0.1);
+        }
+
+        * {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image: url('resources/flowing-water.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+
+        [data-theme="dark"] body {
+            background-image: url('resources/night-sky.jpg');
+        }
+
+        .serif-font {
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-primary), var(--success-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-bg), rgba(214, 158, 46, 0.05));
+        }
+
+        .chart-container {
+            height: 300px;
+            width: 100%;
+        }
+
+        .period-btn {
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .period-btn:hover,
+        .period-btn.active {
+            border-color: var(--accent-primary);
+            background: rgba(214, 158, 46, 0.1);
+            color: var(--accent-primary);
+        }
+
+        .achievement-badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), #B7791F);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 0.5rem;
+        }
+
+        .achievement-badge.locked {
+            background: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+
+        .progress-ring-circle {
+            stroke: var(--border-color);
+            stroke-width: 4;
+            fill: transparent;
+            r: 54;
+            cx: 60;
+            cy: 60;
+        }
+
+        .progress-ring-progress {
+            stroke: var(--accent-primary);
+            stroke-width: 4;
+            fill: transparent;
+            r: 54;
+            cx: 60;
+            cy: 60;
+            stroke-dasharray: 339.292;
+            stroke-dashoffset: 339.292;
+            transform: rotate(-90deg);
+            transform-origin: 60px 60px;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .project-progress-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .project-progress-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-progress-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 1rem;
+        }
+
+        .project-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--success-color));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 50;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), #B7791F);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(214, 158, 46, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 250px;
+            }
+            
+            .progress-ring {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .progress-ring-circle,
+            .progress-ring-progress {
+                r: 44;
+                cx: 50;
+                cy: 50;
+            }
+            
+            .progress-ring-progress {
+                stroke-dasharray: 276.46;
+                stroke-dashoffset: 276.46;
+                transform-origin: 50px 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="back-btn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    返回项目
+                </a>
+
+                <div class="flex items-center space-x-3">
+                    <h1 class="text-xl font-bold serif-font gradient-text">数据统计</h1>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <button class="export-btn" id="export-btn">
+                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    导出数据
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="pt-20 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- 时间范围选择 -->
+            <div class="mb-8">
+                <div class="flex flex-wrap gap-3 justify-center">
+                    <button class="period-btn active" data-period="today">今日</button>
+                    <button class="period-btn" data-period="week">本周</button>
+                    <button class="period-btn" data-period="month">本月</button>
+                    <button class="period-btn" data-period="year">本年</button>
+                    <button class="period-btn" data-period="all">全部</button>
+                </div>
+            </div>
+
+            <!-- 概览统计 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card glass-card rounded-xl p-6 floating-animation">
+                    <div class="text-center">
+                        <div class="progress-ring mx-auto mb-4">
+                            <svg class="progress-ring">
+                                <circle class="progress-ring-circle"></circle>
+                                <circle class="progress-ring-progress" id="daily-progress-ring"></circle>
+                            </svg>
+                            <div class="progress-ring-text">
+                                <div class="text-2xl font-bold gradient-text" id="daily-focus-time">0h</div>
+                                <div class="text-xs text-gray-500">今日</div>
+                            </div>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-500">今日专注时间</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card rounded-xl p-6 floating-animation" style="animation-delay: 0.2s;">
+                    <div class="text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold gradient-text" id="total-sessions">0</div>
+                        <h3 class="text-sm font-medium text-gray-500">总专注次数</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card rounded-xl p-6 floating-animation" style="animation-delay: 0.4s;">
+                    <div class="text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold gradient-text" id="average-session">0m</div>
+                        <h3 class="text-sm font-medium text-gray-500">平均专注时长</h3>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card rounded-xl p-6 floating-animation" style="animation-delay: 0.6s;">
+                    <div class="text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold gradient-text" id="focus-streak">0</div>
+                        <h3 class="text-sm font-medium text-gray-500">连续专注天数</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- 专注时间趋势图 -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold serif-font mb-4">专注时间趋势</h3>
+                    <div class="chart-container" id="trend-chart"></div>
+                </div>
+
+                <!-- 项目分布饼图 -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold serif-font mb-4">项目时间分布</h3>
+                    <div class="chart-container" id="project-chart"></div>
+                </div>
+            </div>
+
+            <!-- 分类统计和项目进度 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- 分类统计 -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold serif-font mb-4">分类统计</h3>
+                    <div class="space-y-4" id="category-stats">
+                        <!-- 分类统计数据将通过JavaScript生成 -->
+                    </div>
+                </div>
+
+                <!-- 项目进度 -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold serif-font mb-4">项目专注排行</h3>
+                    <div id="project-progress">
+                        <!-- 项目进度数据将通过JavaScript生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成就系统 -->
+            <div class="glass-card rounded-xl p-6 mb-8">
+                <h3 class="text-lg font-semibold serif-font mb-6">专注成就</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6" id="achievements">
+                    <!-- 成就将通过JavaScript生成 -->
+                </div>
+            </div>
+
+            <!-- 详细记录 -->
+            <div class="glass-card rounded-xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold serif-font">专注记录</h3>
+                    <div class="flex items-center space-x-2">
+                        <input type="date" id="record-date-filter" class="px-3 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm">
+                        <button class="export-btn text-sm" id="filter-records-btn">筛选</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="text-left py-3 px-4">时间</th>
+                                <th class="text-left py-3 px-4">项目</th>
+                                <th class="text-left py-3 px-4">时长</th>
+                                <th class="text-left py-3 px-4">类型</th>
+                            </tr>
+                        </thead>
+                        <tbody id="focus-records">
+                            <!-- 记录将通过JavaScript生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        class StatisticsManager {
+            constructor() {
+                this.projects = this.loadProjects();
+                this.focusSessions = this.loadFocusSessions();
+                this.currentPeriod = 'today';
+                this.charts = {};
+                
+                this.init();
+            }
+
+            init() {
+                this.initTheme();
+                this.bindEvents();
+                this.updateStatistics();
+                this.initCharts();
+                this.updateAchievements();
+                this.initAnimations();
+            }
+
+            initTheme() {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+
+            loadProjects() {
+                const saved = localStorage.getItem('projects');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            loadFocusSessions() {
+                const saved = localStorage.getItem('focusSessions');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            bindEvents() {
+                // 时间范围选择
+                const periodBtns = document.querySelectorAll('.period-btn');
+                periodBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        periodBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentPeriod = btn.getAttribute('data-period');
+                        this.updateStatistics();
+                        this.updateCharts();
+                    });
+                });
+
+                // 导出数据
+                document.getElementById('export-btn').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                // 记录筛选
+                document.getElementById('filter-records-btn').addEventListener('click', () => {
+                    this.filterRecords();
+                });
+            }
+
+            getFilteredSessions() {
+                const now = new Date();
+                let startDate;
+
+                switch (this.currentPeriod) {
+                    case 'today':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        break;
+                    case 'week':
+                        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'month':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        break;
+                    case 'year':
+                        startDate = new Date(now.getFullYear(), 0, 1);
+                        break;
+                    case 'all':
+                    default:
+                        startDate = new Date(0);
+                        break;
+                }
+
+                return this.focusSessions.filter(session => 
+                    new Date(session.startTime) >= startDate
+                );
+            }
+
+            updateStatistics() {
+                const sessions = this.getFilteredSessions();
+                
+                // 总专注时间
+                const totalTime = sessions.reduce((sum, session) => sum + session.duration, 0);
+                const hours = Math.floor(totalTime / 3600);
+                const minutes = Math.floor((totalTime % 3600) / 60);
+                
+                if (this.currentPeriod === 'today') {
+                    document.getElementById('daily-focus-time').textContent = `${hours}h`;
+                    this.updateProgressRing(totalTime, 8 * 3600); // 每日目标8小时
+                }
+
+                // 总专注次数
+                document.getElementById('total-sessions').textContent = sessions.length;
+
+                // 平均专注时长
+                const avgTime = sessions.length > 0 ? totalTime / sessions.length : 0;
+                const avgMinutes = Math.floor(avgTime / 60);
+                document.getElementById('average-session').textContent = `${avgMinutes}m`;
+
+                // 连续专注天数
+                const streak = this.calculateStreak();
+                document.getElementById('focus-streak').textContent = streak;
+
+                // 更新分类统计
+                this.updateCategoryStats(sessions);
+
+                // 更新项目进度
+                this.updateProjectProgress(sessions);
+
+                // 更新专注记录
+                this.updateFocusRecords(sessions);
+            }
+
+            updateProgressRing(current, target) {
+                const percentage = Math.min(100, (current / target) * 100);
+                const circumference = 2 * Math.PI * 54;
+                const offset = circumference - (percentage / 100) * circumference;
+                
+                document.getElementById('daily-progress-ring').style.strokeDashoffset = offset;
+            }
+
+            calculateStreak() {
+                if (this.focusSessions.length === 0) return 0;
+
+                const sessions = this.focusSessions.sort((a, b) => 
+                    new Date(b.startTime) - new Date(a.startTime)
+                );
+
+                let streak = 0;
+                let currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0);
+
+                for (let session of sessions) {
+                    const sessionDate = new Date(session.startTime);
+                    sessionDate.setHours(0, 0, 0, 0);
+
+                    const diffDays = Math.floor((currentDate - sessionDate) / (1000 * 60 * 60 * 24));
+
+                    if (diffDays === streak) {
+                        streak++;
+                        currentDate.setDate(currentDate.getDate() - 1);
+                    } else if (diffDays > streak) {
+                        break;
+                    }
+                }
+
+                return streak;
+            }
+
+            updateCategoryStats(sessions) {
+                const categoryStats = {};
+                const categoryNames = {
+                    work: '工作',
+                    study: '学习',
+                    life: '生活',
+                    creative: '创意'
+                };
+
+                // 统计各分类的专注时间
+                sessions.forEach(session => {
+                    const project = this.projects.find(p => p.id === session.projectId);
+                    if (project) {
+                        const category = project.category;
+                        categoryStats[category] = (categoryStats[category] || 0) + session.duration;
+                    }
+                });
+
+                const container = document.getElementById('category-stats');
+                const totalTime = Object.values(categoryStats).reduce((sum, time) => sum + time, 0);
+
+                if (totalTime === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">暂无数据</p>';
+                    return;
+                }
+
+                container.innerHTML = Object.entries(categoryStats).map(([category, time]) => {
+                    const percentage = ((time / totalTime) * 100).toFixed(1);
+                    const hours = Math.floor(time / 3600);
+                    const minutes = Math.floor((time % 3600) / 60);
+                    
+                    return `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-4 h-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"></div>
+                                <span class="font-medium">${categoryNames[category]}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-semibold">${hours}h ${minutes}m</div>
+                                <div class="text-sm text-gray-500">${percentage}%</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateProjectProgress(sessions) {
+                const projectTimes = {};
+
+                // 统计各项目的专注时间
+                sessions.forEach(session => {
+                    projectTimes[session.projectId] = (projectTimes[session.projectId] || 0) + session.duration;
+                });
+
+                // 按专注时间排序
+                const sortedProjects = Object.entries(projectTimes)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 5); // 只显示前5个项目
+
+                const container = document.getElementById('project-progress');
+
+                if (sortedProjects.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">暂无数据</p>';
+                    return;
+                }
+
+                const maxTime = sortedProjects[0][1];
+
+                container.innerHTML = sortedProjects.map(([projectId, time]) => {
+                    const project = this.projects.find(p => p.id === projectId);
+                    if (!project) return '';
+
+                    const percentage = (time / maxTime) * 100;
+                    const hours = Math.floor(time / 3600);
+                    const minutes = Math.floor((time % 3600) / 60);
+
+                    return `
+                        <div class="project-progress-item">
+                            <div class="flex-1">
+                                <div class="font-medium text-sm mb-1">${project.name}</div>
+                                <div class="project-progress-bar">
+                                    <div class="project-progress-fill" style="width: ${percentage}%"></div>
+                                </div>
+                            </div>
+                            <div class="text-right ml-4">
+                                <div class="text-sm font-semibold">${hours}h ${minutes}m</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateFocusRecords(sessions) {
+                const container = document.getElementById('focus-records');
+                const sortedSessions = sessions.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
+                if (sortedSessions.length === 0) {
+                    container.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">暂无记录</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = sortedSessions.map(session => {
+                    const project = this.projects.find(p => p.id === session.projectId);
+                    const startTime = new Date(session.startTime);
+                    const hours = Math.floor(session.duration / 3600);
+                    const minutes = Math.floor((session.duration % 3600) / 60);
+                    const duration = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+                    return `
+                        <tr class="border-b border-gray-100 dark:border-gray-800">
+                            <td class="py-3 px-4">
+                                <div class="text-sm font-medium">${startTime.toLocaleDateString('zh-CN')}</div>
+                                <div class="text-xs text-gray-500">${startTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <div class="text-sm font-medium">${project ? project.name : '未知项目'}</div>
+                                <div class="text-xs text-gray-500">${project ? this.getCategoryName(project.category) : ''}</div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <div class="text-sm font-semibold">${duration}</div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                    ${session.type || '自由专注'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            getCategoryName(category) {
+                const names = {
+                    work: '工作',
+                    study: '学习',
+                    life: '生活',
+                    creative: '创意'
+                };
+                return names[category] || category;
+            }
+
+            initCharts() {
+                this.initTrendChart();
+                this.initProjectChart();
+            }
+
+            initTrendChart() {
+                const chartDom = document.getElementById('trend-chart');
+                this.charts.trend = echarts.init(chartDom);
+                this.updateTrendChart();
+            }
+
+            initProjectChart() {
+                const chartDom = document.getElementById('project-chart');
+                this.charts.project = echarts.init(chartDom);
+                this.updateProjectChart();
+            }
+
+            updateCharts() {
+                this.updateTrendChart();
+                this.updateProjectChart();
+            }
+
+            updateTrendChart() {
+                const sessions = this.getFilteredSessions();
+                const trendData = this.processTrendData(sessions);
+
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        borderColor: '#D69E2E',
+                        textStyle: {
+                            color: '#2D3748'
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: trendData.dates,
+                        axisLine: {
+                            lineStyle: {
+                                color: '#718096'
+                            }
+                        },
+                        axisLabel: {
+                            color: '#718096'
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '专注时间(分钟)',
+                        axisLine: {
+                            lineStyle: {
+                                color: '#718096'
+                            }
+                        },
+                        axisLabel: {
+                            color: '#718096'
+                        }
+                    },
+                    series: [{
+                        data: trendData.values,
+                        type: 'line',
+                        smooth: true,
+                        lineStyle: {
+                            color: '#D69E2E',
+                            width: 3
+                        },
+                        itemStyle: {
+                            color: '#D69E2E'
+                        },
+                        areaStyle: {
+                            color: {
+                                type: 'linear',
+                                x: 0,
+                                y: 0,
+                                x2: 0,
+                                y2: 1,
+                                colorStops: [{
+                                    offset: 0, color: 'rgba(214, 158, 46, 0.3)'
+                                }, {
+                                    offset: 1, color: 'rgba(214, 158, 46, 0.05)'
+                                }]
+                            }
+                        }
+                    }]
+                };
+
+                this.charts.trend.setOption(option);
+            }
+
+            updateProjectChart() {
+                const sessions = this.getFilteredSessions();
+                const projectData = this.processProjectData(sessions);
+
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        borderColor: '#D69E2E',
+                        textStyle: {
+                            color: '#2D3748'
+                        }
+                    },
+                    series: [{
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        data: projectData,
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        itemStyle: {
+                            borderRadius: 8,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }
+                    }]
+                };
+
+                this.charts.project.setOption(option);
+            }
+
+            processTrendData(sessions) {
+                const data = {};
+                const now = new Date();
+                let days = 7; // 默认显示7天
+
+                if (this.currentPeriod === 'today') days = 1;
+                else if (this.currentPeriod === 'week') days = 7;
+                else if (this.currentPeriod === 'month') days = 30;
+                else if (this.currentPeriod === 'year') days = 365;
+
+                // 初始化日期数组
+                for (let i = days - 1; i >= 0; i--) {
+                    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                    const key = date.toISOString().split('T')[0];
+                    data[key] = 0;
+                }
+
+                // 统计每日专注时间
+                sessions.forEach(session => {
+                    const date = new Date(session.startTime).toISOString().split('T')[0];
+                    if (data.hasOwnProperty(date)) {
+                        data[date] += session.duration;
+                    }
+                });
+
+                const dates = Object.keys(data).map(date => {
+                    const d = new Date(date);
+                    if (days === 1) return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                    return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+                });
+
+                const values = Object.values(data).map(time => Math.floor(time / 60)); // 转换为分钟
+
+                return { dates, values };
+            }
+
+            processProjectData(sessions) {
+                const projectTimes = {};
+                const categoryNames = {
+                    work: '工作',
+                    study: '学习',
+                    life: '生活',
+                    creative: '创意'
+                };
+
+                // 统计各项目的专注时间
+                sessions.forEach(session => {
+                    const project = this.projects.find(p => p.id === session.projectId);
+                    if (project) {
+                        const projectName = project.name;
+                        projectTimes[projectName] = (projectTimes[projectName] || 0) + session.duration;
+                    }
+                });
+
+                const colors = [
+                    '#D69E2E', '#38A169', '#DD6B20', '#3182CE',
+                    '#805AD5', '#D53F8C', '#38B2AC', '#68D391'
+                ];
+
+                return Object.entries(projectTimes).map(([name, time], index) => ({
+                    name,
+                    value: Math.floor(time / 60), // 转换为分钟
+                    itemStyle: {
+                        color: colors[index % colors.length]
+                    }
+                }));
+            }
+
+            updateAchievements() {
+                const achievements = [
+                    { id: 'first_focus', name: '初心', desc: '完成第一次专注', icon: '🌱', condition: () => this.focusSessions.length >= 1 },
+                    { id: 'daily_goal', name: '日行', desc: '完成每日目标', icon: '📅', condition: () => this.checkDailyGoal() },
+                    { id: 'week_streak', name: '七日', desc: '连续专注7天', icon: '🔥', condition: () => this.calculateStreak() >= 7 },
+                    { id: 'hour_master', name: '时匠', desc: '单次专注超过2小时', icon: '⏰', condition: () => this.checkLongSession(7200) },
+                    { id: 'project_completer', name: '项目达人', desc: '完成10个项目', icon: '🎯', condition: () => this.projects.filter(p => p.status === 'completed').length >= 10 },
+                    { id: 'focus_master', name: '专注大师', desc: '累计专注100小时', icon: '🧘', condition: () => this.getTotalFocusTime() >= 360000 }
+                ];
+
+                const container = document.getElementById('achievements');
+                container.innerHTML = achievements.map(achievement => {
+                    const unlocked = achievement.condition();
+                    return `
+                        <div class="text-center">
+                            <div class="achievement-badge ${unlocked ? '' : 'locked'}">
+                                ${achievement.icon}
+                            </div>
+                            <h4 class="font-medium text-sm mb-1 ${unlocked ? 'text-gray-800 dark:text-gray-200' : 'text-gray-400'}">${achievement.name}</h4>
+                            <p class="text-xs text-gray-500">${achievement.desc}</p>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            checkDailyGoal() {
+                const today = new Date();
+                const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const todayTime = this.focusSessions
+                    .filter(session => new Date(session.startTime) >= todayStart)
+                    .reduce((sum, session) => sum + session.duration, 0);
+                return todayTime >= 7200; // 每日目标2小时
+            }
+
+            checkLongSession(minTime) {
+                return this.focusSessions.some(session => session.duration >= minTime);
+            }
+
+            getTotalFocusTime() {
+                return this.focusSessions.reduce((sum, session) => sum + session.duration, 0);
+            }
+
+            filterRecords() {
+                const dateFilter = document.getElementById('record-date-filter').value;
+                const sessions = dateFilter ? 
+                    this.focusSessions.filter(session => 
+                        new Date(session.startTime).toISOString().split('T')[0] === dateFilter
+                    ) : this.getFilteredSessions();
+                
+                this.updateFocusRecords(sessions);
+            }
+
+            exportData() {
+                const data = {
+                    projects: this.projects,
+                    focusSessions: this.focusSessions,
+                    exportDate: new Date().toISOString(),
+                    statistics: this.getStatisticsSummary()
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `静水流深-统计数据-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                this.showNotification('统计数据已导出，如流水般清澈', 'success');
+            }
+
+            getStatisticsSummary() {
+                const sessions = this.focusSessions;
+                const totalTime = sessions.reduce((sum, session) => sum + session.duration, 0);
+                
+                return {
+                    totalSessions: sessions.length,
+                    totalTime,
+                    averageSession: sessions.length > 0 ? totalTime / sessions.length : 0,
+                    streak: this.calculateStreak(),
+                    period: this.currentPeriod
+                };
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-24 right-4 glass-card rounded-lg p-4 text-white z-50 transform translate-x-full transition-transform duration-300`;
+                
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    warning: 'bg-yellow-500',
+                    info: 'bg-blue-500'
+                };
+
+                notification.classList.add(colors[type]);
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-1">
+                            <p class="text-sm font-medium">${message}</p>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.remove('translate-x-full');
+                }, 100);
+
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, 3000);
+            }
+
+            initAnimations() {
+                // 页面加载动画
+                anime({
+                    targets: '.floating-animation',
+                    translateY: [-20, 0],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100),
+                    duration: 800,
+                    easing: 'easeOutCubic'
+                });
+            }
+        }
+
+        // 初始化统计管理器
+        const statisticsManager = new StatisticsManager();
+
+        // 响应式图表
+        window.addEventListener('resize', () => {
+            Object.values(statisticsManager.charts).forEach(chart => {
+                chart.resize();
+            });
+        });
+    </script>
+</body>
+</html>

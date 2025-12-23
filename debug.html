@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试页面</title>
+    <style>
+        /* 基础样式 */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        
+        /* CSS变量测试 */
+        :root {
+            --test-color: #ff0000;
+            --test-bg: #00ff00;
+        }
+        
+        .var-test {
+            color: var(--test-color);
+            background: var(--test-bg);
+            padding: 20px;
+            margin: 10px;
+            border: 2px solid black;
+        }
+        
+        /* 类选择器测试 */
+        .class-test {
+            background: blue;
+            color: white;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 10px;
+        }
+        
+        /* 复杂选择器测试 */
+        .parent .child {
+            background: yellow;
+            padding: 10px;
+            margin: 5px;
+        }
+        
+        /* 动画测试 */
+        @keyframes testAnimation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .animated {
+            animation: testAnimation 2s infinite;
+            width: 100px;
+            height: 100px;
+            background: red;
+            margin: 20px;
+        }
+        
+        /* 响应式测试 */
+        @media (max-width: 768px) {
+            .responsive-test {
+                background: purple;
+                color: white;
+                padding: 20px;
+            }
+        }
+        
+        .responsive-test {
+            background: orange;
+            color: white;
+            padding: 20px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSS调试页面</h1>
+    
+    <div class="var-test">
+        CSS变量测试 - 应该是红字绿背景
+    </div>
+    
+    <div class="class-test">
+        类选择器测试 - 应该是白字蓝背景
+    </div>
+    
+    <div class="parent">
+        <div class="child">
+            复杂选择器测试 - 应该是黄背景
+        </div>
+    </div>
+    
+    <div class="animated">
+        动画测试
+    </div>
+    
+    <div class="responsive-test">
+        响应式测试 - 窗口小于768px时变紫色
+    </div>
+</body>
+</html>
