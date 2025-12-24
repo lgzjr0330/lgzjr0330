@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静水流深 - 数据统计</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background-image: url('https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/3612dd9e5eba4079aef2482ba3963936~tplv-a9rns2rl98-image.image?rcl=202512231857189AC3A4803BA12D453085&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1769079515&x-signature=BaAlGcbxuj4bL4%2BSuDbKUY0MlRo%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 dark:text-white transition-colors duration-500">
+    <div id="app" class="min-h-screen flex flex-col">
+        <header class="glass-card p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="moon" class="w-8 h-8 text-yellow-500"></i>
+                <h1 class="text-2xl font-bold">静水流深</h1>
+            </div>
+            <nav class="flex space-x-4">
+                <a href="index.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">项目管理</a>
+                <a href="focus.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">专注模式</a>
+                <a href="stats.html" class="px-4 py-2 rounded-lg bg-white/10 transition">数据统计</a>
+                <a href="settings.html" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">设置</a>
+            </nav>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-white/10">
+                <i data-lucide="sun" class="w-6 h-6"></i>
+            </button>
+        </header>
+
+        <main class="flex-grow p-8">
+            <div class="glass-card p-8 rounded-lg">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">数据统计</h2>
+                    <div class="flex space-x-2">
+                        <button class="time-filter px-4 py-2 rounded-lg bg-white/10" data-filter="today">今日</button>
+                        <button class="time-filter px-4 py-2 rounded-lg hover:bg-white/10" data-filter="week">本周</button>
+                        <button class="time-filter px-4 py-2 rounded-lg hover:bg-white/10" data-filter="month">本月</button>
+                        <button class="time-filter px-4 py-2 rounded-lg hover:bg-white/10" data-filter="year">本年</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                    <div class="glass-card p-4 rounded-lg text-center">
+                        <p class="text-sm opacity-70">专注时长</p>
+                        <p class="text-3xl font-bold"><span id="total-focus-hours">0</span>h</p>
+                        <i data-lucide="clock" class="w-12 h-12 mx-auto text-yellow-500 opacity-50"></i>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg text-center">
+                        <p class="text-sm opacity-70">专注次数</p>
+                        <p class="text-3xl font-bold"><span id="total-sessions">0</span></p>
+                        <i data-lucide="zap" class="w-12 h-12 mx-auto text-purple-500 opacity-50"></i>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg text-center">
+                        <p class="text-sm opacity-70">平均专注时长</p>
+                        <p class="text-3xl font-bold"><span id="avg-session-duration">0</span>m</p>
+                        <i data-lucide="target" class="w-12 h-12 mx-auto text-green-500 opacity-50"></i>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg text-center">
+                        <p class="text-sm opacity-70">连续专注天数</p>
+                        <p class="text-3xl font-bold"><span id="streak-days">0</span></p>
+                        <i data-lucide="calendar" class="w-12 h-12 mx-auto text-pink-500 opacity-50"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div class="glass-card p-4 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">专注时间趋势</h3>
+                        <div style="height: 300px;">
+                            <canvas id="focus-trend-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">项目时间分布</h3>
+                        <div style="height: 300px;">
+                            <canvas id="project-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-card p-4 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">分类统计</h3>
+                        <div id="category-stats" class="space-y-4">
+                            <!-- Category stats will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">项目专注排行</h3>
+                        <div id="project-ranking" class="space-y-4">
+                            <!-- Project rankings will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // Theme toggle
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const icon = themeToggle.querySelector('i');
+            if (html.classList.contains('dark')) {
+                icon.setAttribute('data-lucide', 'moon');
+            } else {
+                icon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+            updateCharts(); // Update charts for new theme
+        });
+
+        // Load theme from localStorage
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            themeToggle.querySelector('i').setAttribute('data-lucide', 'moon');
+            lucide.createIcons();
+        }
+
+        let projects = JSON.parse(localStorage.getItem('projects')) || [];
+        let focusSessions = JSON.parse(localStorage.getItem('focusSessions')) || [];
+
+        let currentFilter = 'today';
+        let focusTrendChart, projectDistributionChart;
+
+        const timeFilters = document.querySelectorAll('.time-filter');
+        timeFilters.forEach(filter => {
+            filter.addEventListener('click', () => {
+                timeFilters.forEach(f => f.classList.remove('bg-white/10'));
+                filter.classList.add('bg-white/10');
+                currentFilter = filter.dataset.filter;
+                updateStats();
+            });
+        });
+
+        function getSessionsForFilter() {
+            const now = new Date();
+            let startDate = new Date();
+
+            switch (currentFilter) {
+                case 'today':
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case 'week':
+                    startDate.setDate(now.getDate() - now.getDay());
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case 'month':
+                    startDate.setDate(1);
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case 'year':
+                    startDate.setMonth(0, 1);
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+            }
+
+            return focusSessions.filter(session => new Date(session.date) >= startDate);
+        }
+
+        function updateStats() {
+            const sessions = getSessionsForFilter();
+            const totalMinutes = sessions.reduce((acc, session) => acc + session.duration, 0);
+            const totalHours = Math.floor(totalMinutes / 60);
+
+            document.getElementById('total-focus-hours').textContent = totalHours;
+            document.getElementById('total-sessions').textContent = sessions.length;
+            document.getElementById('avg-session-duration').textContent = sessions.length > 0 ? Math.round(totalMinutes / sessions.length) : 0;
+            
+            // Calculate streak days
+            const streakDays = calculateStreakDays();
+            document.getElementById('streak-days').textContent = streakDays;
+
+            updateCategoryStats(sessions);
+            updateProjectRanking(sessions);
+            updateCharts();
+        }
+
+        function calculateStreakDays() {
+            if (focusSessions.length === 0) return 0;
+
+            const sortedSessions = [...focusSessions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            let streak = 0;
+            let currentDate = new Date();
+            currentDate.setHours(0, 0, 0, 0);
+
+            for (const session of sortedSessions) {
+                const sessionDate = new Date(session.date);
+                sessionDate.setHours(0, 0, 0, 0);
+
+                const diffTime = Math.abs(currentDate - sessionDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1 || (diffDays === 0 && streak === 0)) {
+                    streak++;
+                    currentDate = sessionDate;
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        function updateCategoryStats(sessions) {
+            const categoryStatsContainer = document.getElementById('category-stats');
+            const categoryMap = {};
+
+            sessions.forEach(session => {
+                const project = projects.find(p => p.id === session.projectId);
+                if (project && project.category) {
+                    if (!categoryMap[project.category]) {
+                        categoryMap[project.category] = 0;
+                    }
+                    categoryMap[project.category] += session.duration;
+                }
+            });
+
+            categoryStatsContainer.innerHTML = Object.entries(categoryMap)
+                .sort((a, b) => b[1] - a[1])
+                .map(([category, minutes]) => `
+                    <div class="flex justify-between items-center">
+                        <span>${category}</span>
+                        <span>${Math.floor(minutes / 60)}h ${minutes % 60}m</span>
+                    </div>
+                `).join('');
+
+            if (Object.keys(categoryMap).length === 0) {
+                categoryStatsContainer.innerHTML = '<p class="text-center opacity-50">暂无数据</p>';
+            }
+        }
+
+        function updateProjectRanking(sessions) {
+            const projectRankingContainer = document.getElementById('project-ranking');
+            const projectMap = {};
+
+            sessions.forEach(session => {
+                const project = projects.find(p => p.id === session.projectId);
+                if (project) {
+                    if (!projectMap[project.id]) {
+                        projectMap[project.id] = {
+                            title: project.title,
+                            minutes: 0
+                        };
+                    }
+                    projectMap[project.id].minutes += session.duration;
+                }
+            });
+
+            projectRankingContainer.innerHTML = Object.entries(projectMap)
+                .sort((a, b) => b[1].minutes - a[1].minutes)
+                .slice(0, 5)
+                .map(([id, data]) => `
+                    <div class="flex justify-between items-center">
+                        <span>${data.title}</span>
+                        <span>${Math.floor(data.minutes / 60)}h ${data.minutes % 60}m</span>
+                    </div>
+                `).join('');
+
+            if (Object.keys(projectMap).length === 0) {
+                projectRankingContainer.innerHTML = '<p class="text-center opacity-50">暂无数据</p>';
+            }
+        }
+
+        function updateCharts() {
+            updateFocusTrendChart();
+            updateProjectDistributionChart();
+        }
+
+        function updateFocusTrendChart() {
+            const ctx = document.getElementById('focus-trend-chart').getContext('2d');
+            const sessions = getSessionsForFilter();
+            
+            // Prepare data for the chart
+            const labels = [];
+            const data = [];
+
+            // Group sessions by date
+            const dateMap = {};
+            sessions.forEach(session => {
+                const date = new Date(session.date).toLocaleDateString();
+                if (!dateMap[date]) {
+                    dateMap[date] = 0;
+                }
+                dateMap[date] += session.duration;
+            });
+
+            // Sort dates and prepare labels and data
+            const sortedDates = Object.entries(dateMap)
+                .sort((a, b) => new Date(a[0]) - new Date(b[0]));
+            
+            if (sortedDates.length === 0) {
+                // 如果没有数据，提供默认值
+                labels.push('暂无数据');
+                data.push(0);
+            } else {
+                sortedDates.forEach(([date, minutes]) => {
+                    labels.push(date);
+                    data.push(minutes);
+                });
+            }
+
+            if (focusTrendChart) {
+                focusTrendChart.destroy();
+            }
+
+            focusTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '专注时长（分钟）',
+                        data: data,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: html.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: html.classList.contains('dark') ? 'white' : 'black'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateProjectDistributionChart() {
+            const ctx = document.getElementById('project-distribution-chart').getContext('2d');
+            const sessions = getSessionsForFilter();
+            
+            const projectMap = {};
+            sessions.forEach(session => {
+                const project = projects.find(p => p.id === session.projectId);
+                if (project) {
+                    if (!projectMap[project.id]) {
+                        projectMap[project.id] = {
+                            title: project.title,
+                            minutes: 0
+                        };
+                    }
+                    projectMap[project.id].minutes += session.duration;
+                }
+            });
+
+            let labels = [];
+            let data = [];
+
+            if (Object.keys(projectMap).length === 0) {
+                // 如果没有数据，提供默认值
+                labels = ['暂无数据'];
+                data = [1];
+            } else {
+                labels = Object.values(projectMap).map(p => p.title);
+                data = Object.values(projectMap).map(p => p.minutes);
+            }
+
+            if (projectDistributionChart) {
+                projectDistributionChart.destroy();
+            }
+
+            projectDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '项目专注时长',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                        ],
+                        borderColor: html.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: html.classList.contains('dark') ? 'white' : 'black'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial update
+        updateStats();
+
+    </script>
+</body>
+</html>
